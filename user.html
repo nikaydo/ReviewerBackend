@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Профиль пользователя</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex min-h-screen bg-gray-100 text-gray-800">
+
+  <!-- Левое меню -->
+  <aside class="w-64 bg-white shadow-md p-4">
+    <h2 class="text-xl font-semibold mb-4">Меню</h2>
+    <ul>
+      <li><button class="menu-item w-full text-left py-2 px-3 hover:bg-gray-200 rounded" data-section="reviews">Отзывы</button></li>
+      <li><button class="menu-item w-full text-left py-2 px-3 hover:bg-gray-200 rounded" data-section="settings">Настройки</button></li>
+    </ul>
+  </aside>
+
+  <!-- Основной контент -->
+  <main class="flex-1 p-6 relative">
+    <!-- Отзывы -->
+<section id="reviews-section" class="hidden">
+  <h2 class="text-2xl font-bold mb-4">Отзывы</h2>
+  <p id="generatingIndicator" class="text-blue-600 mb-4 hidden">
+  Генерация отзыва... Пожалуйста, подождите.
+</p>
+  <div id="reviews-list"></div>
+
+  <!-- Кнопка "Составить отзыв" уже есть -->
+  <button id="openModalBtn" class="fixed bottom-6 right-6 bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700">
+    Составить отзыв
+  </button>
+</section>
+
+    <!-- Настройки -->
+    <section id="settings-section" class="hidden">
+      <h2 class="text-2xl font-bold mb-4">Настройки</h2>
+      <p>Здесь будут настройки профиля.</p>
+    </section>
+  </main>
+
+  <!-- Модальное окно -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+      <h3 class="text-xl font-semibold mb-4">Составить отзыв</h3>
+      <textarea id="promptInput" class="w-full p-2 border rounded mb-4" rows="4" placeholder="Введите промт..."></textarea>
+      <div class="flex justify-end gap-2">
+        <button id="closeModalBtn" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Отмена</button>
+        <button id="generateReviewBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                Генерировать
+        </button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const sections = {
+    reviews: document.getElementById("reviews-section"),
+    settings: document.getElementById("settings-section")
+  };
+
+  document.querySelectorAll('.menu-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      Object.values(sections).forEach(sec => sec.classList.add("hidden"));
+      sections[btn.dataset.section].classList.remove("hidden");
+
+      if (btn.dataset.section === "reviews") {
+        loadReviews(); // загружаем отзывы при открытии
+      }
+    });
+  });
+
+  const modal = document.getElementById("modal");
+  const promptInput = document.getElementById("promptInput");
+
+  document.getElementById("openModalBtn").addEventListener("click", () => {
+    modal.classList.remove("hidden");
+  });
+
+  document.getElementById("closeModalBtn").addEventListener("click", () => {
+    modal.classList.add("hidden");
+  });
+
+  const generateBtn = modal.querySelector("button.bg-blue-600");
+ document.getElementById("generateReviewBtn").addEventListener("click", async () => {
+  const prompt = promptInput.value.trim();
+  if (!prompt) return alert("Введите вопрос для ИИ");
+
+  const openBtn = document.getElementById("openModalBtn");
+  const indicator = document.getElementById("generatingIndicator");
+
+  modal.classList.add("hidden");
+  openBtn.disabled = true;
+  openBtn.classList.add("opacity-50", "cursor-not-allowed");
+  indicator.classList.remove("hidden");
+
+  try {
+    const res = await fetch("http://localhost:8080/user/review/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ req: prompt }),
+    });
+
+    if (!res.ok) throw new Error("Ошибка при генерации");
+
+    promptInput.value = "";
+    await loadReviews();
+  } catch (err) {
+    alert("Ошибка: " + err.message);
+  } finally {
+    openBtn.disabled = false;
+    openBtn.classList.remove("opacity-50", "cursor-not-allowed");
+    indicator.classList.add("hidden");
+  }
+});
+
+
+
+  // Загрузка отзывов
+  async function loadReviews() {
+    const container = document.getElementById("reviews-list");
+    container.innerHTML = "<p class='text-gray-500'>Загрузка...</p>";
+
+    try {
+      const res = await fetch("http://localhost:8080/user/review/get");
+      const data = await res.json();
+
+      if (!Array.isArray(data)) throw new Error("Неверный формат данных");
+
+container.innerHTML = data.map((item, index) => `
+  <div class="bg-white p-3 rounded shadow mb-3 text-sm">
+    <p><strong>Пользователь:</strong> ${item.user}</p>
+    <p><strong>Запрос:</strong> ${item.request}</p>
+    <p><strong>Ответ:</strong> ${item.answer}</p>
+    <button class="mt-2 text-blue-600 hover:underline toggle-think" data-index="${index}">
+      Показать мысли
+    </button>
+    <div class="mt-2 text-gray-700 hidden think-block" id="think-${index}">
+      <p><strong>Мысль:</strong> ${item.think}</p>
+    </div>
+  </div>
+`).join("") || "<p class='text-gray-500'>Нет отзывов</p>";
+document.querySelectorAll('.toggle-think').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const index = btn.dataset.index;
+    const block = document.getElementById(`think-${index}`);
+    const isHidden = block.classList.toggle('hidden');
+    btn.textContent = isHidden ? "Показать мысли" : "Скрыть мысли";
+  });
+});
+
+    } catch (err) {
+      container.innerHTML = `<p class="text-red-600">Ошибка загрузки: ${err.message}</p>`;
+    }
+  }
+</script>
+
+</body>
+</html>
