@@ -1,15 +1,17 @@
 package server
 
 import (
+	"fmt"
+	"main/internal/config"
 	"main/internal/database"
 	"main/internal/router"
 	"net/http"
 )
 
-func ServerInit(pg database.Database) *http.Server {
+func ServerInit(pg database.Database, e config.Env) *http.Server {
 	r := router.RouterInit(pg)
 	return &http.Server{
-		Addr:    "localhost:8080",
+		Addr:    fmt.Sprintf("%s:%s", e.EnvMap["HOST"], e.EnvMap["PORT"]),
 		Handler: r.Router(),
 	}
 }

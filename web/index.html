@@ -102,7 +102,7 @@
       body: new URLSearchParams({ req: prompt }),
     });
 
-    if (!res.ok) throw new Error("Ошибка при генерации");
+    if (!res.ok) throw window.location.href = "/user";
 
     promptInput.value = "";
     await loadReviews();
@@ -118,42 +118,68 @@
 
 
   // Загрузка отзывов
-  async function loadReviews() {
-    const container = document.getElementById("reviews-list");
-    container.innerHTML = "<p class='text-gray-500'>Загрузка...</p>";
+async function loadReviews() {
+  const container = document.getElementById("reviews-list");
+  container.innerHTML = "<p class='text-gray-500'>Загрузка...</p>";
 
-    try {
-      const res = await fetch("http://localhost:8080/user/review/get");
-      const data = await res.json();
+  try {
+    const res = await fetch("http://localhost:8080/user/review/get");
+    const data = await res.json();
 
-      if (!Array.isArray(data)) throw new Error("Неверный формат данных");
+    if (!Array.isArray(data)) throw new Error("Неверный формат данных");
 
-container.innerHTML = data.map((item, index) => `
-  <div class="bg-white p-3 rounded shadow mb-3 text-sm">
-    <p><strong>Пользователь:</strong> ${item.user}</p>
-    <p><strong>Запрос:</strong> ${item.request}</p>
-    <p><strong>Ответ:</strong> ${item.answer}</p>
-    <button class="mt-2 text-blue-600 hover:underline toggle-think" data-index="${index}">
-      Показать мысли
-    </button>
-    <div class="mt-2 text-gray-700 hidden think-block" id="think-${index}">
-      <p><strong>Мысль:</strong> ${item.think}</p>
-    </div>
-  </div>
-`).join("") || "<p class='text-gray-500'>Нет отзывов</p>";
-document.querySelectorAll('.toggle-think').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const index = btn.dataset.index;
-    const block = document.getElementById(`think-${index}`);
-    const isHidden = block.classList.toggle('hidden');
-    btn.textContent = isHidden ? "Показать мысли" : "Скрыть мысли";
-  });
-});
+    // Сортировка по дате (от новых к старым)
+    data.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (data.length === 0) {
+      container.innerHTML = "<p class='text-gray-500'>Нет отзывов</p>";
+      return;
+    }
+
+    container.innerHTML = data.map((item, index) => `
+      <div class="bg-white p-3 rounded shadow mb-3 text-sm">
+        <p class="text-gray-400 text-xs mb-1">${formatDate(item.date)}</p>
+        <p><strong>Пользователь:</strong> ${item.user}</p>
+        <p><strong>Запрос:</strong> ${item.request}</p>
+        <p><strong>Ответ:</strong> ${item.answer}</p>
+        <button class="mt-2 text-blue-600 hover:underline toggle-think" data-index="${index}">
+          Показать мысли
+        </button>
+        <div class="mt-2 text-gray-700 hidden think-block" id="think-${index}">
+          <p><strong>Мысль:</strong> ${item.think}</p>
+        </div>
+      </div>
+    `).join("");
+
+    document.querySelectorAll('.toggle-think').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const index = btn.dataset.index;
+        const block = document.getElementById(`think-${index}`);
+        const isHidden = block.classList.toggle('hidden');
+        btn.textContent = isHidden ? "Показать мысли" : "Скрыть мысли";
+      });
+    });
 
     } catch (err) {
-      container.innerHTML = `<p class="text-red-600">Ошибка загрузки: ${err.message}</p>`;
+       if (err.includes("Unauthorized ")) {
+          container.innerHTML = `<p class="text-red-600">Ошибка загрузки: ${Unauthorized}</p>`;
+      }else{
+        container.innerHTML = `<p class="text-red-600">Ошибка загрузки: ${err.message}</p>`;
+      }
     }
-  }
+}
+
+// Функция форматирования даты
+function formatDate(isoDate) {
+  const date = new Date(isoDate);
+  return date.toLocaleString("ru-RU", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 </script>
 
 </body>

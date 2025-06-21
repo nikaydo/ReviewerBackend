@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Вход и регистрация</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-cover bg-center flex items-center justify-center"
+      style="background-image: url('/bg/image_1.png');">
+
+  <div class="bg-white bg-opacity-90 rounded-2xl shadow-xl p-8 max-w-sm w-full">
+    <div class="flex justify-center mb-4">
+      <button id="loginTab" class="px-4 py-2 font-semibold text-blue-600 border-b-2 border-blue-600">Вход</button>
+      <button id="registerTab" class="px-4 py-2 text-gray-600">Регистрация</button>
+    </div>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="space-y-4">
+      <div>
+        <label class="block mb-1 text-sm font-medium">Логин</label>
+        <input type="text" class="w-full px-3 py-2 border rounded-md" required />
+      </div>
+      <div>
+        <label class="block mb-1 text-sm font-medium">Пароль</label>
+        <input type="password" class="w-full px-3 py-2 border rounded-md" required />
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">
+        Войти
+      </button>
+    </form>
+
+    <!-- Register Form -->
+    <form id="registerForm" class="space-y-4 hidden">
+      <div>
+        <label class="block mb-1 text-sm font-medium">Логин</label>
+        <input type="text" class="w-full px-3 py-2 border rounded-md" required />
+      </div>
+      <div>
+        <label class="block mb-1 text-sm font-medium">Пароль</label>
+        <input type="password" class="w-full px-3 py-2 border rounded-md" required />
+      </div>
+      <button type="submit" class="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700">
+        Зарегистрироваться
+      </button>
+    </form>
+  </div>
+
+ <script>
+  const loginTab = document.getElementById("loginTab");
+  const registerTab = document.getElementById("registerTab");
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
+
+  loginTab.onclick = () => {
+    loginTab.classList.add("text-blue-600", "border-b-2", "border-blue-600");
+    registerTab.classList.remove("text-blue-600", "border-b-2", "border-blue-600");
+    loginForm.classList.remove("hidden");
+    registerForm.classList.add("hidden");
+  };
+
+  registerTab.onclick = () => {
+    registerTab.classList.add("text-blue-600", "border-b-2", "border-blue-600");
+    loginTab.classList.remove("text-blue-600", "border-b-2", "border-blue-600");
+    loginForm.classList.add("hidden");
+    registerForm.classList.remove("hidden");
+  };
+
+  // Отправка данных регистрации
+registerForm.onsubmit = async (e) => {
+  e.preventDefault();
+  const login = registerForm.querySelector('input[type="text"]').value;
+  const pass = registerForm.querySelector('input[type="password"]').value;
+
+  const response = await fetch("/signup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ login, pass }),
+  });
+
+  if (response.ok) {
+    alert("Регистрация прошла успешно!");
+    loginTab.click(); // переключаем на форму входа
+  } else {
+    const err = await response.text();
+
+    if (err.includes("duplicate key value") || err.includes("rewusers_login_key")) {
+      alert("Логин уже занят");
+    } else {
+      alert("Ошибка регистрации: " + err);
+    }
+  }
+};
+
+
+  // Отправка данных входа
+loginForm.onsubmit = async (e) => {
+  e.preventDefault();
+  const login = loginForm.querySelector('input[type="text"]').value;
+  const pass = loginForm.querySelector('input[type="password"]').value;
+
+  const response = await fetch("/signin", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ login, pass }),
+  });
+
+  if (response.ok) {
+    alert("Успешный вход!");
+    window.location.href = "/user";
+  } else {
+    const err = await response.text();
+
+    if (err.includes("no rows in result set")) {
+      alert("Логин или пароль указаны неправильно");
+    } else {
+      alert("Ошибка входа: " + err);
+    }
+  }
+};
+
+</script>
+
+</body>
+</html>

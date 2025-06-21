@@ -4,7 +4,9 @@ go 1.24.4
 
 require (
 	github.com/go-chi/chi v1.5.5
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/jackc/pgx/v5 v5.7.5
+	github.com/joho/godotenv v1.5.1
 	github.com/nikaydo/teq v0.0.6
 	google.golang.org/grpc v1.73.0
 )

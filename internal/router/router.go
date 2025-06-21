@@ -17,32 +17,28 @@ func RouterInit(pg database.Database) Router {
 	return Router{Handlers: h.Handlers{Pg: pg}}
 }
 
-func withCORS(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
 func (rt *Router) Router() http.Handler {
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(withCORS)
+	r.Use(rt.Handlers.WithCORS)
 	r.Route("/user", func(r chi.Router) {
+		r.Use(rt.Handlers.CheckJWT)
 		r.Get("/review/get", rt.Handlers.ReviewGet)
 		r.Post("/review/add", rt.Handlers.ReviewAdd)
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "./web/index.html")
+		})
 	})
+	r.Post("/signin", rt.Handlers.SignIn)
+	r.Post("/signup", rt.Handlers.SignUp)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./web/auth.html")
+	})
+	r.Handle("/bg/*", http.StripPrefix("/bg/", http.FileServer(http.Dir("./web/bg"))))
+
 	//r.Post("/ai/response", func(w http.ResponseWriter, r *http.Request) { rt.Handlers.ReqAi(w, r) })
 	return r
 }

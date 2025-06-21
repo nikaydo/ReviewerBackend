@@ -17,7 +17,6 @@ func Generate(model, api, reqv string) (string, string) {
 			} `json:"message"`
 		} `json:"choices"`
 	}
-
 	url := "https://api.mistral.ai/v1/chat/completions"
 	payload := map[string]any{
 		"model": model,
@@ -64,17 +63,8 @@ func Generate(model, api, reqv string) (string, string) {
 		fmt.Println("Пустой ответ")
 		return "", ""
 	}
+	otvet := strings.Split(response.Choices[0].Message.Content, "</think>")
 
-	cleaned := strings.ReplaceAll(response.Choices[0].Message.Content, "<think>", "")
-	cleaned = strings.ReplaceAll(cleaned, "\\boxed{", "")
-	cleaned = strings.ReplaceAll(cleaned, "\\[", "")
-	cleaned = strings.ReplaceAll(cleaned, "}", "")
-	cleaned = strings.ReplaceAll(cleaned, "\n\n", "")
-
-	otvet := strings.Split(cleaned, "</think>")
-
-	think := strings.TrimSpace(otvet[0])
-	long := strings.TrimSpace(otvet[1])
-	answer := strings.Split(long, "\boxed{")
-	return answer[0], think
+	answer := strings.Split(otvet[1], "\\boxed{")
+	return strings.TrimSpace(answer[0]), strings.TrimSpace(otvet[0])
 }
