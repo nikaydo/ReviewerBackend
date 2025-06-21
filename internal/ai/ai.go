@@ -9,14 +9,21 @@ import (
 	"strings"
 )
 
-func Generate(model, api, reqv string) (string, string) {
-	type Response struct {
-		Choices []struct {
-			Message struct {
-				Content string `json:"content"`
-			} `json:"message"`
-		} `json:"choices"`
-	}
+type ResponseFromApi struct {
+	Choices []struct {
+		Message struct {
+			Content string `json:"content"`
+		} `json:"message"`
+	} `json:"choices"`
+}
+
+type ResponseFromAI struct {
+	Response string `json:"response"`
+	Think    string `json:"think"`
+}
+
+func Generate(model, api, reqv string) (ResponseFromAI, error) {
+	var R ResponseFromAI
 	url := "https://api.mistral.ai/v1/chat/completions"
 	payload := map[string]any{
 		"model": model,
@@ -30,14 +37,11 @@ func Generate(model, api, reqv string) (string, string) {
 
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
-		fmt.Println("Ошибка сериализации JSON:", err)
-		return "", ""
+		return R, err
 	}
-
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonData))
 	if err != nil {
-		fmt.Println("Ошибка создания запроса:", err)
-		return "", ""
+		return R, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
@@ -45,26 +49,37 @@ func Generate(model, api, reqv string) (string, string) {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		fmt.Println("Ошибка отправки запроса:", err)
-		return "", ""
+		return R, err
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
 
-	var response Response
+	var response ResponseFromApi
 	if err := json.Unmarshal(body, &response); err != nil {
-		fmt.Println("Ошибка разбора JSON:", err)
-		fmt.Println(string(body))
-		return "", ""
+		return R, err
 	}
 
+	if model == "magistral-medium-2506" {
+		R, err := GenWithThink(response)
+		if err != nil {
+			return R, err
+		}
+		return R, nil
+	}
+	R.Response = response.Choices[0].Message.Content
+	return R, nil
+}
+
+func GenWithThink(response ResponseFromApi) (ResponseFromAI, error) {
+	var R ResponseFromAI
 	if len(response.Choices) == 0 {
 		fmt.Println("Пустой ответ")
-		return "", ""
+		return R, fmt.Errorf("empty response")
 	}
 	otvet := strings.Split(response.Choices[0].Message.Content, "</think>")
-
 	answer := strings.Split(otvet[1], "\\boxed{")
-	return strings.TrimSpace(answer[0]), strings.TrimSpace(otvet[0])
+	R.Response = strings.TrimSpace(answer[0])
+	R.Think = strings.TrimSpace(otvet[0])
+	return R, nil
 }

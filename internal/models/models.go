@@ -10,9 +10,11 @@ type User struct {
 }
 
 type UserTab struct {
+	Id      string    `json:"id"`
 	User    string    `json:"user"`
 	Request string    `json:"request"`
 	Answer  string    `json:"answer"`
 	Think   string    `json:"think"`
+	Model   string    `json:"model"`
 	Date    time.Time `json:"date"`
 }

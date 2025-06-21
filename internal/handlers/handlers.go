@@ -52,29 +52,51 @@ type Handlers struct {
 
 func (h *Handlers) ReviewAdd(w http.ResponseWriter, r *http.Request) {
 	req := r.FormValue("req")
-	_, uername, err := GetUsername(w, r, h.Pg.Env)
+	model := r.FormValue("model")
+
+	_, username, err := GetUsername(w, r, h.Pg.Env)
+	if err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	answer, err := ai.Generate(model, h.Pg.Env.EnvMap["MISTRAL_API_KEY"], req)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		log.Println(err)
 		return
 	}
-	answer, think := ai.Generate("magistral-medium-2506", h.Pg.Env.EnvMap["MISTRAL_API_KEY"], req)
-	err = h.Pg.Add(uername, req, answer, think)
+	err = h.Pg.Add(username, req, answer.Response, answer.Think, model)
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *Handlers) ReviewGet(w http.ResponseWriter, r *http.Request) {
-	_, uername, err := GetUsername(w, r, h.Pg.Env)
+func (h *Handlers) ReviewDelete(w http.ResponseWriter, r *http.Request) {
+	id := r.FormValue("id")
+	_, username, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	us, err := h.Pg.Get(uername)
+	if err := h.Pg.Delete(username, id); err != nil {
+		fmt.Println(err)
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+
+}
+
+func (h *Handlers) ReviewGet(w http.ResponseWriter, r *http.Request) {
+	_, username, err := GetUsername(w, r, h.Pg.Env)
+	if err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	us, err := h.Pg.Get(username)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return

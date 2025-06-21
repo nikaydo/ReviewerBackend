@@ -23,10 +23,12 @@ func (rt *Router) Router() http.Handler {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-	r.Use(rt.Handlers.WithCORS)
+
 	r.Route("/user", func(r chi.Router) {
 		r.Use(rt.Handlers.CheckJWT)
 		r.Get("/review/get", rt.Handlers.ReviewGet)
+		r.Post("/review/delete", rt.Handlers.ReviewDelete)
+
 		r.Post("/review/add", rt.Handlers.ReviewAdd)
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, "./web/index.html")

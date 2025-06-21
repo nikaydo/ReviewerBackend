@@ -19,5 +19,4 @@ func main() {
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		fmt.Println(err)
 	}
-
 }

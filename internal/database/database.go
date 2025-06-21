@@ -32,12 +32,13 @@ func InitBD(e config.Env) Database {
 		log.Fatalf("Ошибка создания таблицы: %v", err)
 	}
 	_, err = conn.Exec(context.Background(), `
-		CREATE TABLE IF NOT EXISTS reviewTable (
+		CREATE TABLE IF NOT EXISTS reviewT (
 			id SERIAL PRIMARY KEY,
 			username TEXT NOT NULL,
 			request TEXT NOT NULL,
 			answer TEXT,
 			date TIMESTAMPTZ,
+			model TEXT,
 			think TEXT
 		)
 	`)
@@ -48,8 +49,8 @@ func InitBD(e config.Env) Database {
 	return Database{Pg: conn, Env: e}
 }
 
-func (d *Database) Add(user, request, answer, think string) error {
-	_, err := d.Pg.Exec(context.Background(), "INSERT INTO reviewTable (username, request,answer,think,date) VALUES ($1, $2, $3, $4, $5)", user, request, answer, think, time.Now())
+func (d *Database) Add(user, request, answer, think, model string) error {
+	_, err := d.Pg.Exec(context.Background(), "INSERT INTO reviewT (username, request,answer,think,date,model) VALUES ($1, $2, $3, $4, $5,$6)", user, request, answer, think, time.Now(), model)
 	if err != nil {
 		return err
 	}
@@ -57,7 +58,7 @@ func (d *Database) Add(user, request, answer, think string) error {
 }
 
 func (d *Database) Get(user string) ([]models.UserTab, error) {
-	rows, err := d.Pg.Query(context.Background(), "SELECT request,answer,think,date FROM reviewTable WHERE username = $1", user)
+	rows, err := d.Pg.Query(context.Background(), "SELECT id,request,answer,think,date,model FROM reviewT WHERE username = $1", user)
 	if err != nil {
 		return nil, err
 	}
@@ -65,12 +66,20 @@ func (d *Database) Get(user string) ([]models.UserTab, error) {
 	var ls []models.UserTab
 	for rows.Next() {
 		var u models.UserTab
-		if err := rows.Scan(&u.Request, &u.Answer, &u.Think, &u.Date); err != nil {
+		if err := rows.Scan(&u.Id, &u.Request, &u.Answer, &u.Think, &u.Date, &u.Model); err != nil {
 			log.Fatalf("Ошибка чтения строки: %v", err)
 		}
 		ls = append(ls, u)
 	}
 	return ls, nil
+}
+
+func (d *Database) Delete(user, id string) error {
+	_, err := d.Pg.Exec(context.Background(), "DELETE FROM reviewT WHERE username = $1 AND id = $2", user, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (u *Database) CreateUser(Login, Pass string) (int64, error) {
