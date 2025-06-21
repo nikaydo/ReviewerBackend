@@ -45,6 +45,18 @@ func InitBD(e config.Env) Database {
 	if err != nil {
 		log.Fatalf("Ошибка создания таблицы: %v", err)
 	}
+	_, err = conn.Exec(context.Background(), `
+		CREATE TABLE IF NOT EXISTS userSetting (
+			id SERIAL PRIMARY KEY,
+			username TEXT NOT NULL,
+			request TEXT,
+			model TEXT
+		)
+	`)
+
+	if err != nil {
+		log.Fatalf("Ошибка создания таблицы: %v", err)
+	}
 
 	return Database{Pg: conn, Env: e}
 }
@@ -72,6 +84,16 @@ func (d *Database) Get(user string) ([]models.UserTab, error) {
 		ls = append(ls, u)
 	}
 	return ls, nil
+}
+
+func (d *Database) GetOne(user, id string) (models.UserTab, error) {
+	rows := d.Pg.QueryRow(context.Background(), "SELECT id,request,answer,think,date,model FROM reviewT WHERE username = $1 AND id = $2", user, id)
+
+	var u models.UserTab
+	if err := rows.Scan(&u.Id, &u.Request, &u.Answer, &u.Think, &u.Date, &u.Model); err != nil {
+		log.Fatalf("Ошибка чтения строки: %v", err)
+	}
+	return u, nil
 }
 
 func (d *Database) Delete(user, id string) error {

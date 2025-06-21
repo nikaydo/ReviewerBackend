@@ -3,11 +3,11 @@ package handles
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"main/internal/ai"
 	"main/internal/database"
 	"main/internal/jwt"
 	"main/internal/models"
+	"main/internal/textanalize"
 	"net/http"
 	"time"
 )
@@ -53,7 +53,6 @@ type Handlers struct {
 func (h *Handlers) ReviewAdd(w http.ResponseWriter, r *http.Request) {
 	req := r.FormValue("req")
 	model := r.FormValue("model")
-
 	_, username, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
@@ -62,12 +61,10 @@ func (h *Handlers) ReviewAdd(w http.ResponseWriter, r *http.Request) {
 	answer, err := ai.Generate(model, h.Pg.Env.EnvMap["MISTRAL_API_KEY"], req)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
-		log.Println(err)
 		return
 	}
 	err = h.Pg.Add(username, req, answer.Response, answer.Think, model)
 	if err != nil {
-		fmt.Println(err)
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
@@ -82,12 +79,22 @@ func (h *Handlers) ReviewDelete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := h.Pg.Delete(username, id); err != nil {
-		fmt.Println(err)
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
 
+}
+
+func (h *Handlers) ReviewAnalize(w http.ResponseWriter, r *http.Request) {
+	text := r.FormValue("text")
+	resp, err := textanalize.Generate(text, h.Pg.Env)
+	if err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	writeJSONResponse(w, resp, http.StatusOK)
 }
 
 func (h *Handlers) ReviewGet(w http.ResponseWriter, r *http.Request) {
@@ -146,6 +153,22 @@ func (h *Handlers) SignUp(w http.ResponseWriter, r *http.Request) {
 	}
 	if n == 0 {
 		writeErrorResponse(w, fmt.Errorf("ошибка"), http.StatusBadRequest)
+		return
+	}
+	j := jwt.JwtTokens{Env: h.Pg.Env}
+	if err = j.CreateTokens(user.Id, user.Login, ""); err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	if err = h.Pg.UpdateUser(user.Login, j.RefreshToken); err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	http.SetCookie(w, MakeCookie("jwt", j.AccessToken, time.Duration(10*time.Minute)))
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write([]byte(j.AccessToken))
+	if err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)

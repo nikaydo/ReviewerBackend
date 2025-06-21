@@ -28,7 +28,7 @@ func (rt *Router) Router() http.Handler {
 		r.Use(rt.Handlers.CheckJWT)
 		r.Get("/review/get", rt.Handlers.ReviewGet)
 		r.Post("/review/delete", rt.Handlers.ReviewDelete)
-
+		r.Post("/review/text/analyze", rt.Handlers.ReviewAnalize)
 		r.Post("/review/add", rt.Handlers.ReviewAdd)
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, "./web/index.html")
@@ -37,6 +37,9 @@ func (rt *Router) Router() http.Handler {
 	r.Post("/signin", rt.Handlers.SignIn)
 	r.Post("/signup", rt.Handlers.SignUp)
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./web/hello.html")
+	})
+	r.Get("/signin", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./web/auth.html")
 	})
 	r.Handle("/bg/*", http.StripPrefix("/bg/", http.FileServer(http.Dir("./web/bg"))))

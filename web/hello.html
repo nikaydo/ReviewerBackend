@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Первая страница</title>
+  <meta property="og:url" content="http://reviewsai.example.com">
+  <meta property="og:title" content="Первая страница">
+  <meta property="og:description" content="">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://static.tildacdn.info/tild6636-3961-4736-b063-653036623937/-/resize/504x/photo-1710010966055-.jpg">
+  <link rel="canonical" href="http://reviewsai.example.com">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="shortcut icon" href="https://static.tildacdn.info/img/tildafavicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://static.tildacdn.info/css/tilda-grid-3.0.min.css">
+  <link rel="stylesheet" href="https://static.tildacdn.info/ws/project4413063/tilda-blocks-page71199261.min.css?t=1750508409">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&subset=latin,cyrillic" rel="stylesheet">
+  <link rel="stylesheet" href="https://static.tildacdn.info/css/tilda-cover-1.0.min.css">
+  <style>
+    @media screen and (min-width: 980px) {
+      .t-records {opacity: 0;}
+      .t-records_animated {
+        transition: opacity ease-in-out .2s;
+      }
+      .t-records_visible {opacity: 1;}
+    }
+    #rec1118069581 .t001__uptitle {
+      text-transform: uppercase;
+    }
+    body {
+      margin: 0;
+      font-family: 'Roboto', sans-serif;
+    }
+    .t-records {
+      opacity: 0;
+    }
+    .t-records_animated {
+      transition: opacity ease-in-out 0.2s;
+    }
+    .t-records_visible {
+      opacity: 1;
+    }
+    #rec1118069581 .t001__uptitle {
+      text-transform: uppercase;
+    }
+    .start-button {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 2px solid #fff;
+      color: #fff;
+      font-size: 18px;
+      padding: 12px 28px;
+      border-radius: 30px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .start-button:hover {
+      background-color: #fff;
+      color: #000;
+    }
+  
+  </style>
+</head>
+<body style="margin:0;">
+  <div id="allrecords" class="t-records t-records_animated t-records_visible">
+    <div id="rec1118069581" class="r t-rec">
+      <div class="t-cover" style="background-image: url('https://static.tildacdn.info/tild6636-3961-4736-b063-653036623937/-/resize/20x/photo-1710010966055-.jpg'); height: 100vh;">
+        <div class="t-cover__carrier" style="height: 100vh; background-image: url('https://optim.tildacdn.pub/tild6636-3961-4736-b063-653036623937/-/format/webp/photo-1710010966055-.jpg.webp');"></div>
+        <div class="t-cover__filter" style="height: 100vh; background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7));"></div>
+        <div class="t-container">
+          <div class="t-col t-col_12">
+            <div class="t-cover__wrapper t-valign_middle" style="height: 100vh;">
+              <div class="t001 t-align_center">
+                <div class="t001__wrapper">
+                  <div class="t001__uptitle t-uptitle t-uptitle_sm">ПИШИ ОТЗЫВЫ ЛЕГКО</div>
+                  <div class="t001__title t-title t-title_xl">Отзывы с помощью ИИ</div>
+                  <div class="t001__descr t-descr t-descr_xl t001__descr_center">Начни писать отзывы с помощью ИИ! Это просто и увлекательно. Попробуй и убедись сам!</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="start-button" id="startButton">Начать</button>
+
+<script>
+  document.getElementById('startButton').addEventListener('click', function () {
+    window.location.href = 'http://localhost:8080/signin';
+  });
+</script>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Удалено: блок о платформе Tilda -->
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var records = document.querySelectorAll('.t-records');
+      records.forEach(function (el) {
+        el.classList.add('t-records_visible');
+      });
+    });
+  </script>
+</body>
+</html>

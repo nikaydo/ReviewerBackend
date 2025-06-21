@@ -5,270 +5,578 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Профиль пользователя</title>
   <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<style>
-  .prose pre {
-    background-color: #f3f4f6; /* bg-gray-100 */
-    color: #1f2937;            /* text-gray-800 */
-    padding: 1rem;
-    border-radius: 0.375rem;
-    overflow-x: auto;
-  }
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body {
+      background-color: #121212;
+      color: #E0E0E0;
+      font-family: 'Inter', sans-serif;
+    }
 
-  .prose code {
-    background-color: #f9fafb; /* чуть светлее для inline-кода */
-    color: #d6336c;            /* кастомный цвет, опционально */
-    padding: 0.2em 0.4em;
-    border-radius: 0.25rem;
-  }
+    .prose pre {
+      background-color: #1E1E1E;
+      color: #E0E0E0;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
 
-  .prose pre code {
-    background-color: transparent;
-    padding: 0;
-    color: inherit;
-  }
-</style>
+    .prose code {
+      background-color: #1E1E1E;
+      color: #FF2E63;
+      padding: 0.3rem 0.6rem;
+      border-radius: 0.3rem;
+      font-size: 0.95rem;
+    }
 
+    .prose pre code {
+      background-color: transparent;
+      padding: 0;
+      color: inherit;
+    }
+
+    .prose {
+      color: #E0E0E0;
+      font-size: 1.125rem;
+      line-height: 1.9;
+      padding: 1.5rem;
+      background-color: #2A2A2A;
+      border-radius: 0.5rem;
+    }
+
+    .prose strong {
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+
+    .prose h1, .prose h2, .prose h3, .prose h4 {
+      color: #E0E0E0;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .prose ul, .prose ol {
+      margin-left: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .prose li {
+      margin-bottom: 0.5rem;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1E1E1E;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #00F5D4;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00d1b2;
+    }
+
+    .sidebar-item:hover {
+      background-color: #FF2E63;
+      color: #E0E0E0;
+    }
+
+    .sidebar-item {
+      transition: all 0.2s ease;
+    }
+
+    textarea, select {
+      background-color: #1E1E1E;
+      color: #E0E0E0;
+      border-color: transparent;
+      transition: all 0.2s ease;
+    }
+
+    textarea::placeholder {
+      color: #E0E0E0;
+      opacity: 0.6;
+    }
+
+    textarea:focus, select:focus {
+      background-color: #1E1E1E;
+      outline: none;
+      box-shadow: 0 0 0 2px #00F5D4;
+    }
+
+    .input-container {
+      position: relative;
+    }
+
+    .input-label {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      color: #E0E0E0;
+      opacity: 0.6;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+      pointer-events: none;
+    }
+
+    textarea:focus + .input-label,
+    textarea:not(:placeholder-shown) + .input-label {
+      top: -0.75rem;
+      left: 0.75rem;
+      font-size: 0.75rem;
+      background-color: #1E1E1E;
+      padding: 0 0.25rem;
+      opacity: 1;
+      color: #00F5D4;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loader {
+      border: 2px solid #1E1E1E;
+      border-top: 2px solid #00F5D4;
+      border-radius: 50%;
+      width: 1.5rem;
+      height: 1.5rem;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .analysis-panel {
+      transition: opacity 0.3s ease;
+      overflow-y: auto;
+      max-height: none; /* Remove max-height restriction */
+    }
+
+    .analysis-panel.hidden {
+      opacity: 0;
+      height: 0;
+      overflow: hidden;
+    }
+
+    .analysis-panel:not(.hidden) {
+      opacity: 1;
+      height: auto;
+    }
+
+    #selected-review .response-text {
+      width: 100%;
+      max-width: none; /* Override prose max-width */
+    }
+  </style>
 </head>
-<body class="flex min-h-screen bg-gray-100 text-gray-800">
+<body class="flex min-h-screen text-gray-200 antialiased font-sans">
 
   <!-- Левое меню -->
-  <aside class="w-64 bg-white shadow-md p-4">
-    <h2 class="text-xl font-semibold mb-4">Меню</h2>
-    <ul>
-      <li><button class="menu-item w-full text-left py-2 px-3 hover:bg-gray-200 rounded" data-section="reviews">Отзывы</button></li>
-      <li><button class="menu-item w-full text-left py-2 px-3 hover:bg-gray-200 rounded" data-section="settings">Настройки</button></li>
+  <aside class="w-72 bg-[#1E1E1E] shadow-md p-4 fixed h-full overflow-y-auto">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-semibold text-[#E0E0E0]">SEO</h2>
+    </div>
+    <ul class="space-y-1">
+      <li><button class="menu-item w-full text-left py-2 px-3 hover:bg-[#FF2E63] rounded-lg transition-colors duration-200 text-[#E0E0E0] font-medium" data-section="create">Создать запрос</button></li>
+      <li><button class="menu-item w-full text-left py-2 px-3 hover:bg-[#FF2E63] rounded-lg transition-colors duration-200 text-[#E0E0E0] font-medium" data-section="settings">Настройки</button></li>
     </ul>
+    <hr class="my-3 border-[#1E1E1E]" />
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-md font-semibold text-[#E0E0E0]">Список запросов</h3>
+      <button id="refreshBtn" class="text-[#E0E0E0] hover:bg-[#FF2E63] p-2 rounded-full transition-colors duration-200" title="Обновить запросы">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-color="#00F5D4" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+      </button>
+    </div>
+    <ul id="review-list" class="space-y-1"></ul>
   </aside>
 
   <!-- Основной контент -->
-  <main class="flex-1 p-6 relative">
-    <!-- Отзывы -->
-    <section id="reviews-section" class="hidden">
-      <h2 class="text-2xl font-bold mb-4">Отзывы</h2>
-      <p id="generatingIndicator" class="text-blue-600 mb-4 hidden">
-        Генерация отзыва... Пожалуйста, подождите.
-      </p>
-      <div id="reviews-list"></div>
+  <main class="flex-1 p-6 ml-72">
+    <!-- Создать запрос -->
+    <section id="create-section" class="hidden">
+      <h2 class="text-2xl font-semibold text-[#E0E0E0] mb-4">Создать запрос</h2>
+      <div class="bg-[#1E1E1E] p-4 rounded-lg shadow-sm">
+        <div class="input-container mb-4">
+          <textarea id="promptInput" class="w-full p-4 rounded-lg resize-y min-h-[120px] text-sm" placeholder=""></textarea>
+          <label class="input-label">Введите запрос...</label>
+        </div>
+        <div class="flex justify-between items-center">
+          <select id="modelSelect" class="p-3 rounded-lg text-sm flex-1 max-w-xs">
+            <option value="magistral-medium-2506">magistral-medium-2506 (думающая)</option>
+            <option value="mistral-medium-2505">mistral-medium-2505</option>
+            <option value="ministral-8b-2410">ministral-8b-2410</option>
+            <option value="ministral-3b-2410">ministral-3b-2410</option>
+          </select>
+          <button id="generateReviewBtn" class="px-4 py-2 bg-[#FF2E63] text-[#E0E0E0] rounded-lg hover:bg-[#e02858] transition-colors duration-200 text-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Отправить
+          </button>
+        </div>
+      </div>
+      <div id="generatingIndicator" class="hidden mt-3 flex items-center gap-2">
+        <div class="loader"></div>
+        <p class="text-[#00F5D4] text-sm font-medium">Генерация ответа...</p>
+      </div>
+    </section>
 
-      <button id="openModalBtn" class="fixed bottom-6 right-6 bg-blue-600 text-white px-6 py-3 rounded-full shadow-lg hover:bg-blue-700">
-        Составить отзыв
-      </button>
+    <!-- Запросы -->
+    <section id="reviews-section" class="hidden">
+      <h2 class="text-2xl font-semibold text-[#E0E0E0] mb-4">Запрос</h2>
+      <div id="selected-review" class="bg-[#1E1E1E] p-4 rounded-lg shadow-sm w-full"></div>
     </section>
 
     <!-- Настройки -->
     <section id="settings-section" class="hidden">
-      <h2 class="text-2xl font-bold mb-4">Настройки</h2>
-      <p>Здесь будут настройки профиля.</p>
+      <h2 class="text-2xl font-semibold text-[#E0E0E0] mb-4">Настройки</h2>
+      <div class="bg-[#1E1E1E] p-4 rounded-lg shadow-sm">
+        <p class="text-[#E0E0E0] text-sm">Здесь будут настройки профиля.</p>
+      </div>
     </section>
   </main>
 
-  <!-- Модальное окно -->
-  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-      <h3 class="text-xl font-semibold mb-4">Составить отзыв</h3>
-
-      <label class="block text-sm font-medium mb-1">Промт:</label>
-      <textarea id="promptInput" class="w-full p-2 border rounded mb-4" rows="4" placeholder="Введите промт..."></textarea>
-
-      <label class="block text-sm font-medium mb-1">Модель:</label>
-      <select id="modelSelect" class="w-full p-2 border rounded mb-4">
-        <option value="magistral-medium-2506">magistral-medium-2506 (думающая)</option>
-        <option value="mistral-medium-2505">mistral-medium-2505</option>
-        <option value="ministral-8b-2410">ministral-8b-2410</option>
-        <option value="ministral-3b-2410">ministral-3b-2410</option>
-      </select>
-
-      <div class="flex justify-end gap-2">
-        <button id="closeModalBtn" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Отмена</button>
-        <button id="generateReviewBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Генерировать</button>
-      </div>
-    </div>
-  </div>
-
   <script>
+    const API_BASE_URL = 'http://localhost:8080';
     const sections = {
+      create: document.getElementById("create-section"),
       reviews: document.getElementById("reviews-section"),
       settings: document.getElementById("settings-section")
     };
+
+    let reviewsData = [];
 
     document.querySelectorAll('.menu-item').forEach(btn => {
       btn.addEventListener('click', () => {
         Object.values(sections).forEach(sec => sec.classList.add("hidden"));
         sections[btn.dataset.section].classList.remove("hidden");
-
-        if (btn.dataset.section === "reviews") {
-          loadReviews();
-        }
       });
     });
 
-    const modal = document.getElementById("modal");
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+      loadReviewList();
+    });
+
     const promptInput = document.getElementById("promptInput");
-
-    document.getElementById("openModalBtn").addEventListener("click", () => {
-      modal.classList.remove("hidden");
-    });
-
-    document.getElementById("closeModalBtn").addEventListener("click", () => {
-      modal.classList.add("hidden");
-    });
 
     document.getElementById("generateReviewBtn").addEventListener("click", async () => {
       const prompt = promptInput.value.trim();
       const model = document.getElementById("modelSelect").value;
 
-      if (!prompt) return alert("Введите вопрос для ИИ");
+      if (!prompt) return alert("Введите запрос для ИИ");
 
-      const openBtn = document.getElementById("openModalBtn");
+      const generateBtn = document.getElementById("generateReviewBtn");
       const indicator = document.getElementById("generatingIndicator");
 
-      modal.classList.add("hidden");
-      openBtn.disabled = true;
-      openBtn.classList.add("opacity-50", "cursor-not-allowed");
+      generateBtn.disabled = true;
+      generateBtn.classList.add("opacity-50", "cursor-not-allowed");
       indicator.classList.remove("hidden");
 
       try {
-        const res = await fetch("http://localhost:8080/user/review/add", {
+        const res = await fetch(`${API_BASE_URL}/user/review/add`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: new URLSearchParams({ req: prompt, model }),
         });
 
-        if (!res.ok) throw new Error("Ошибка при генерации");
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Ошибка при генерации");
+        }
 
         promptInput.value = "";
-        await loadReviews();
+        await loadReviewList();
+        sections.reviews.classList.remove("hidden");
+        Object.keys(sections).forEach(key => {
+          if (key !== "reviews") sections[key].classList.add("hidden");
+        });
+        displayReview(0);
       } catch (err) {
-        alert("Ошибка: " + err.message);
+        console.error("API Error:", err);
+        alert(`Ошибка: ${err.message || "Не удалось выполнить запрос."}`);
       } finally {
-        openBtn.disabled = false;
-        openBtn.classList.remove("opacity-50", "cursor-not-allowed");
+        generateBtn.disabled = false;
+        generateBtn.classList.remove("opacity-50", "cursor-not-allowed");
         indicator.classList.add("hidden");
       }
     });
 
-    async function loadReviews() {
-      const container = document.getElementById("reviews-list");
-      container.innerHTML = "<p class='text-gray-500'>Загрузка...</p>";
+    async function loadReviewList() {
+      const listContainer = document.getElementById("review-list");
+      listContainer.innerHTML = '<div class="loader mx-auto"></div>';
 
       try {
-        const res = await fetch("http://localhost:8080/user/review/get");
-        const data = await res.json();
+        const res = await fetch(`${API_BASE_URL}/user/review/get`);
+        reviewsData = await res.json();
 
-        if (!Array.isArray(data)) throw new Error("Неверный формат данных");
+        if (!Array.isArray(reviewsData)) throw new Error("Неверный формат данных");
 
-        data.sort((a, b) => new Date(b.date) - new Date(a.date));
+        reviewsData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-        if (data.length === 0) {
-          container.innerHTML = "<p class='text-gray-500'>Нет отзывов</p>";
+        if (reviewsData.length === 0) {
+          listContainer.innerHTML = "<p class='text-[#E0E0E0] text-sm font-medium'>Нет запросов</p>";
           return;
         }
 
-        container.innerHTML = data.map((item, index) => `
-          <div class="bg-white p-4 rounded-lg shadow-md mb-4">
-            <div class="flex justify-between items-center mb-2">
-              <h3 class="font-semibold text-lg text-gray-800">Отзыв${item.user}</h3>
-              <span class="text-sm text-gray-500">${formatDate(item.date)}</span>
-            </div>
-            <p class="text-sm text-gray-700 mb-2"><strong>Запрос:</strong> ${item.request}</p>
-              <div class="mt-2">
-  <p class="font-semibold">Ответ:</p>
-  <div class="prose max-w-none mt-1 bg-gray-50 p-3 rounded" id="answer-${index}"></div>
-</div>
-
-            <div class="flex gap-3 mt-4">
-              <button class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 text-sm delete-review-btn" data-id="${item.id}">
-                🗑 Удалить
-              </button>
-              <button class="bg-gray-200 text-gray-800 px-4 py-1 rounded hover:bg-gray-300 text-sm info-review-btn" data-index="${index}">
-                ℹ Информация
-              </button>
-            </div>
-
-<div class="mt-3 hidden info-block space-y-1 text-sm text-gray-600" id="info-${index}">
-  <p><strong>Модель:</strong> ${item.model}</p>
-  <p><strong>Ответ:</strong> ${getStats(item.answer)}</p>
-  ${item.think && item.think.trim()
-    ? `<div><strong>Мысль:</strong> 
-         <span class="block mt-1 bg-gray-100 p-2 rounded" id="think-${index}">${item.think}</span>
-         <button class="mt-1 text-blue-600 text-xs toggle-think-btn" data-index="${index}">Скрыть мысль</button>
-       </div>`
-    : ''
-  }
-</div>
-
-
-          </div>
+        listContainer.innerHTML = reviewsData.map((item, index) => `
+          <li class="flex items-center justify-between">
+            <button class="sidebar-item flex-1 text-left py-2 px-3 rounded-lg text-[#E0E0E0] text-sm truncate transition-colors duration-200" data-index="${index}" title="${item.request}">
+              ${item.request.slice(0, 25)}${item.request.length > 25 ? '...' : ''}
+            </button>
+            <button class="delete-review-btn text-[#E0E0E0] hover:bg-[#FF2E63] p-1 rounded-full transition-colors duration-200" data-id="${item.id}" title="Удалить запрос">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0v3m4-3v3m-7 4v8m4-8v8m4-8v8"></path></svg>
+            </button>
+          </li>
         `).join("");
-        data.forEach((item, index) => {
-  const answerEl = document.getElementById(`answer-${index}`);
-  if (answerEl) {
-    answerEl.innerHTML = marked.parse(item.answer || "");
-  }
-});
 
-document.querySelectorAll(".toggle-think-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const index = btn.dataset.index;
-    const thinkBlock = document.getElementById(`think-${index}`);
-    const isHidden = thinkBlock.classList.toggle("hidden");
-    btn.textContent = isHidden ? "Показать мысль" : "Скрыть мысль";
-  });
-});
-        // Удаление отзыва
-        document.querySelectorAll(".delete-review-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    if (!confirm("Удалить отзыв?")) return;
-
-    const reviewCard = btn.closest(".bg-white.rounded-lg.shadow-md");
-    if (reviewCard) {
-      reviewCard.remove(); // Просто удаляем из DOM
-    }
-
-    // Если хочешь позже вызвать реальное удаление на сервере, можно отложить
-     
-    fetch("http://localhost:8080/user/review/delete", {
-      method: "POST",
-      body: new URLSearchParams({ id: btn.dataset.id }),
-    }).catch(err => {
-      console.error("Ошибка удаления на сервере:", err);
-    });
-     
-  });
-});
-
-        // Показ дополнительной информации
-        document.querySelectorAll(".info-review-btn").forEach(btn => {
+        document.querySelectorAll(".sidebar-item").forEach(btn => {
           btn.addEventListener("click", () => {
-            const block = document.getElementById(`info-${btn.dataset.index}`);
-            const isHidden = block.classList.toggle("hidden");
-            btn.textContent = isHidden ? "ℹ Информация" : "❌ Скрыть";
+            const index = btn.dataset.index;
+            displayReview(index);
+            sections.reviews.classList.remove("hidden");
+            Object.keys(sections).forEach(key => {
+              if (key !== "reviews") sections[key].classList.add("hidden");
+            });
+          });
+        });
+
+        document.querySelectorAll(".delete-review-btn").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            if (!confirm("Удалить запрос?")) return;
+            try {
+              await fetch(`${API_BASE_URL}/user/review/delete`, {
+                method: "POST",
+                body: new URLSearchParams({ id: btn.dataset.id }),
+              });
+              const listItem = btn.closest("li");
+              listItem.classList.add("opacity-0", "scale-95");
+              setTimeout(() => {
+                listItem.remove();
+                loadReviewList();
+              }, 300);
+            } catch (err) {
+              console.error("Ошибка удаления:", err);
+              alert("Не удалось удалить запрос.");
+            }
           });
         });
 
       } catch (err) {
-        container.innerHTML = `<p class="text-red-600">Ошибка загрузки: ${err.message}</p>`;
+        listContainer.innerHTML = `<p class="text-[#FF2E63] text-sm font-medium">Ошибка загрузки: ${err.message}</p>`;
       }
     }
-function getStats(text) {
-  const symbols = text.length;
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  const lines = text.split("\n").length;
-  return `${symbols} символов, ${words} слов, ${lines} строк`;
-}
 
-    function formatDate(isoDate) {
-      const date = new Date(isoDate);
-      return date.toLocaleString("ru-RU", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+    async function analyzeText(text, container) {
+      const analysisContainer = container.querySelector(".analysis-content");
+      const indicator = container.querySelector(".analysis-indicator");
+      const toggleBtn = container.querySelector(".toggle-analysis-btn");
+
+      if (!text) {
+        analysisContainer.innerHTML = `<p class="text-[#FF2E63] text-sm">Текст для анализа отсутствует</p>`;
+        toggleBtn.disabled = true;
+        return;
+      }
+
+      indicator.classList.remove("hidden");
+      analysisContainer.innerHTML = "";
+      toggleBtn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/user/review/text/analyze`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ text }),
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || `Ошибка анализа текста (код ${res.status})`);
+        }
+
+        const data = await res.json();
+        console.log("Analysis API Response:", data);
+        if (!data.ok) throw new Error("Анализ не удался");
+
+        const { response, time } = data;
+        const {
+          sentences = [],
+          language = "Не определён",
+          languageIsReliable = false,
+          entities = [],
+          entailments = []
+        } = response || {};
+
+        analysisContainer.innerHTML = `
+          <div class="space-y-4 text-sm text-[#E0E0E0]">
+            <div>
+              <h4 class="font-semibold text-[#00F5D4] mb-2">Общая информация</h4>
+              <p><strong>Язык:</strong> ${language} (${languageIsReliable ? 'Надёжен' : 'Не надёжен'})</p>
+              <p><strong>Время анализа:</strong> ${time.toFixed(2)} сек</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-[#00F5D4] mb-2">Предложения (${sentences.length})</h4>
+              ${sentences.length ? `
+                <ul class="list-disc ml-4">
+                  ${sentences.map((sentence, index) => {
+                    const words = sentence && typeof sentence === 'object' && Array.isArray(sentence.words) ? sentence.words : [];
+                    if (!Array.isArray(words)) {
+                      console.warn(`Invalid sentence at index ${index}:`, sentence);
+                      return `<li>Предложение #${index + 1}: Ошибка данных (не является массивом слов)</li>`;
+                    }
+                    return `
+                      <li>
+                        Предложение #${index + 1}: ${words.map(w => w.token || "N/A").join(" ") || "Пустое предложение"}
+                        ${words.length ? `
+                          <ul class="list-circle ml-4 mt-1">
+                            ${words.map(w => `
+                              <li>
+                                Слово: ${w.token || "N/A"} (Стем: ${w.stem || "N/A"}, Часть речи: ${w.partOfSpeech || "Не указана"}, Позиция: ${w.startingPos || 0}-${w.endingPos || 0})
+                              </li>
+                            `).join("")}
+                          </ul>
+                        ` : ""}
+                      </li>
+                    `;
+                  }).join("")}
+                </ul>
+              ` : "Предложения не обнаружены."}
+            </div>
+            <div>
+              <h4 class="font-semibold text-[#00F5D4] mb-2">Сущности (${Array.isArray(entities) ? entities.length : 0})</h4>
+              ${Array.isArray(entities) && entities.length ? `
+                <ul class="list-disc ml-4">
+                  ${entities.map(e => `
+                    <li>
+                      <p><strong>Текст:</strong> ${e.matchedText || "N/A"}</p>
+                      <p><strong>Тип:</strong> ${(e.type || []).join(", ") || "Не указан"}</p>
+                      <p><strong>Викиданные:</strong> ${e.wikidataId || 'N/A'}</p>
+                      <p><strong>Релевантность:</strong> ${(e.relevanceScore || 0).toFixed(2)}</p>
+                      <p><strong>Уверенность:</strong> ${(e.confidenceScore || 0).toFixed(2)}</p>
+                      ${e.wikiLink ? `<p><a href="${e.wikiLink}" target="_blank" class="text-blue-400 hover:underline">Ссылка на Wikipedia</a></p>` : ""}
+                    </li>
+                  `).join("")}
+                </ul>
+              ` : "Сущности не обнаружены."}
+            </div>
+            <div>
+              <h4 class="font-semibold text-[#00F5D4] mb-2">Утверждения (${Array.isArray(entailments) ? entailments.length : 0})</h4>
+              ${Array.isArray(entailments) && entailments.length ? `
+                <ul class="list-disc ml-4">
+                  ${entailments.map(e => `
+                    <li>
+                      <p><strong>ID:</strong> ${e.id}</p>
+                      <p><strong>Дерево:</strong> ${e.entailedTree || "N/A"}</p>
+                      <p><strong>Оценка:</strong> ${(e.score || 0).toFixed(2)}</p>
+                      <p><strong>Контекст:</strong> ${(e.contextScore || 0).toFixed(2)}</p>
+                      <p><strong>Априорная:</strong> ${(e.priorScore || 0).toFixed(2)}</p>
+                    </li>
+                  `).join("")}
+                </ul>
+              ` : "Утверждения не обнаружены."}
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        console.error("Analysis Error:", err);
+        analysisContainer.innerHTML = `<p class="text-[#FF2E63] text-sm">Ошибка анализа: ${err.message} (проверьте формат данных)</p>`;
+      } finally {
+        indicator.classList.add("hidden");
+        toggleBtn.disabled = false;
+      }
+    }
+
+    function displayReview(index) {
+      const item = reviewsData[index];
+      const container = document.getElementById("selected-review");
+      container.innerHTML = `
+        <div class="space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-semibold text-lg text-[#E0E0E0]">${item.request.slice(0, 50)}${item.request.length > 50 ? '...' : ''}</h3>
+            <span class="text-xs text-[#E0E0E0] opacity-60">${formatDate(item.date)}</span>
+          </div>
+          <div class="text-sm text-[#E0E0E0] response-text prose max-w-none">${marked.parse(item.answer || "")}</div>
+          <button class="toggle-analysis-btn px-4 py-2 bg-[#00F5D4] text-[#1E1E1E] rounded-lg hover:bg-[#00d1b2] transition-colors duration-200 text-sm flex items-center gap-2 ${!item.answer ? 'opacity-50 cursor-not-allowed' : ''}" ${!item.answer ? 'disabled' : ''} aria-label="Анализировать текст ответа">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h6m-6 4h6m-6 4h6m2 4H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012-2v14a2 2 0 01-2 2z"></path></svg>
+            Анализ текста
+          </button>
+          <div class="analysis-panel hidden" aria-hidden="true">
+            <div class="analysis-indicator hidden flex items-center gap-2 mb-2">
+              <div class="loader"></div>
+              <p class="text-[#00F5D4] text-sm font-medium">Анализ текста...</p>
+            </div>
+            <div class="analysis-content bg-[#2A2A2A] p-4 rounded-lg"></div>
+          </div>
+          <div class="bg-[#1E1E1E] p-3 rounded-md space-y-2 text-xs text-[#E0E0E0]">
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#00F5D4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+              <p><strong>Модель:</strong> ${item.model}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg class="w-4 h-4 text-[#00F5D4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+              <p><strong>Статистика:</strong> ${getStats(item.answer)}</p>
+            </div>
+            ${item.think && item.think.trim()
+              ? `<div class="flex items-start gap-2">
+                   <svg class="w-4 h-4 text-[#00F5D4] mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                   <div>
+                     <p><strong>Мысль:</strong></p>
+                     <span class="block mt-1 bg-[#121212] p-2 rounded-md text-xs">${marked.parse(item.think)}</span>
+                   </div>
+                 </div>`
+              : ''
+            }
+          </div>
+        </div>
+      `;
+
+      const toggleBtn = container.querySelector(".toggle-analysis-btn");
+      const analysisPanel = container.querySelector(".analysis-panel");
+      toggleBtn.addEventListener("click", () => {
+        if (analysisPanel.classList.contains("hidden")) {
+          analysisPanel.classList.remove("hidden");
+          analysisPanel.setAttribute("aria-hidden", "false");
+          if (!analysisPanel.querySelector(".analysis-content").innerHTML) {
+            analyzeText(item.answer, container);
+          }
+        } else {
+          analysisPanel.classList.add("hidden");
+          analysisPanel.setAttribute("aria-hidden", "true");
+        }
       });
     }
+
+    function getStats(text) {
+      if (!text) return "0 символов (с пробелами), 0 символов (без пробелов), 0 слов";
+      const charsWithSpaces = text.length;
+      const charsWithoutSpaces = text.replace(/\s/g, '').length;
+      const words = text.trim().split(/\s+/).filter(Boolean).length;
+      return `${charsWithSpaces} символов (с пробелами), ${charsWithoutSpaces} символов (без пробелов), ${words} слов`;
+    }
+
+    function formatDate(isoDate) {
+      try {
+        const date = new Date(isoDate);
+        return date.toLocaleString("ru-RU", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch {
+        return "Неверная дата";
+      }
+    }
+
+    loadReviewList();
+    sections.create.classList.remove("hidden");
   </script>
 </body>
 </html>
