@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type User struct {
 	Id           int    `json:"id,omitempty" `
@@ -17,6 +19,13 @@ type UserTab struct {
 	Think   string    `json:"think"`
 	Model   string    `json:"model"`
 	Date    time.Time `json:"date"`
+}
+
+type UserSettings struct {
+	Id       string `json:"id"`
+	Username string `json:"username"`
+	Request  string `json:"request"`
+	Model    string `json:"model"`
 }
 
 type Response struct {

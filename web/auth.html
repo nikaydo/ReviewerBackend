@@ -126,34 +126,44 @@
       element.style.display = 'block';
       setTimeout(() => element.style.display = 'none', 3000);
     }
+async function sendAuthRequest(url) {
+  const login = loginInput.value.trim();
+  const pass = passwordInput.value.trim();
 
-    async function sendAuthRequest(url) {
-      const login = loginInput.value.trim();
-      const pass = passwordInput.value.trim();
+  if (!login || !pass) {
+    showMessage(errorMessage, 'Пожалуйста, заполните все поля.');
+    return;
+  }
+  
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login, pass })
+    });
 
-      if (!login || !pass) {
-        showMessage(errorMessage, 'Пожалуйста, заполните все поля.');
-        return;
-      }
+    const isSignup = url.includes('/signup');
 
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ login, pass })
+    if (response.ok) {
+      // Если это регистрация, делаем дополнительный запрос
+      if (isSignup) {
+        await fetch('http://localhost:8080/user/setting/save', {
+          method: 'GET'
         });
-
-        if (response.ok) {
-          window.location.href = 'http://localhost:8080/user';
-        } else {
-          const data = await response.json();
-          showMessage(errorMessage, data?.error || 'Ошибка авторизации');
-        }
-      } catch (error) {
-        showMessage(errorMessage, 'Неверный логин или пороль');
-        console.error(error);
       }
+
+      // Перенаправляем на /user
+      window.location.href = 'http://localhost:8080/user';
+    } else {
+      const data = await response.json();
+      showMessage(errorMessage, data?.error || 'Ошибка авторизации');
     }
+  } catch (error) {
+    showMessage(errorMessage, 'Неверный логин или пороль');
+    console.error(error);
+  }
+}
+
 
     loginBtn.addEventListener('click', () => {
       sendAuthRequest('http://localhost:8080/signin');

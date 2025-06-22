@@ -7,7 +7,6 @@ import (
 	"main/internal/database"
 	"main/internal/jwt"
 	"main/internal/models"
-	"main/internal/textanalize"
 	"net/http"
 	"time"
 )
@@ -85,16 +84,58 @@ func (h *Handlers) ReviewDelete(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 
 }
-
-func (h *Handlers) ReviewAnalize(w http.ResponseWriter, r *http.Request) {
-	text := r.FormValue("text")
-	resp, err := textanalize.Generate(text, h.Pg.Env)
+func (h *Handlers) SaveSettings(w http.ResponseWriter, r *http.Request) {
+	_, username, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
+	if err := h.Pg.SaveSettings(username, "", ""); err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
-	writeJSONResponse(w, resp, http.StatusOK)
+}
+
+func (h *Handlers) UpdateSettings(w http.ResponseWriter, r *http.Request) {
+	request := r.FormValue("request")
+	model := r.FormValue("model")
+	_, username, err := GetUsername(w, r, h.Pg.Env)
+	if err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	if err := h.Pg.UpdateSettings(username, request, model); err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handlers) ReviewUpdate(w http.ResponseWriter, r *http.Request) {
+	id := r.FormValue("id")
+	text := r.FormValue("text")
+	_, username, err := GetUsername(w, r, h.Pg.Env)
+	if err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	h.Pg.UpdateReview(username, text, id)
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handlers) GetSettings(w http.ResponseWriter, r *http.Request) {
+	_, username, err := GetUsername(w, r, h.Pg.Env)
+	if err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	u, err := h.Pg.GetSettings(username)
+	if err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	writeJSONResponse(w, u, http.StatusOK)
 }
 
 func (h *Handlers) ReviewGet(w http.ResponseWriter, r *http.Request) {

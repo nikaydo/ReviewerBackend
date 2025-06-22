@@ -26,10 +26,15 @@ func (rt *Router) Router() http.Handler {
 
 	r.Route("/user", func(r chi.Router) {
 		r.Use(rt.Handlers.CheckJWT)
+		r.Get("/setting/get", rt.Handlers.GetSettings)
+		r.Get("/setting/save", rt.Handlers.SaveSettings)
+		r.Post("/setting/update", rt.Handlers.UpdateSettings)
+
 		r.Get("/review/get", rt.Handlers.ReviewGet)
 		r.Post("/review/delete", rt.Handlers.ReviewDelete)
-		r.Post("/review/text/analyze", rt.Handlers.ReviewAnalize)
 		r.Post("/review/add", rt.Handlers.ReviewAdd)
+		r.Post("/review/update", rt.Handlers.ReviewUpdate)
+
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, "./web/index.html")
 		})
@@ -43,7 +48,5 @@ func (rt *Router) Router() http.Handler {
 		http.ServeFile(w, r, "./web/auth.html")
 	})
 	r.Handle("/bg/*", http.StripPrefix("/bg/", http.FileServer(http.Dir("./web/bg"))))
-
-	//r.Post("/ai/response", func(w http.ResponseWriter, r *http.Request) { rt.Handlers.ReqAi(w, r) })
 	return r
 }

@@ -18,7 +18,7 @@
       background-color: #1E1E1E;
       color: #E0E0E0;
       padding: 1.5rem;
-      border-radius: 0.5rem;
+      border-radius: 0.75rem;
       overflow-x: auto;
       font-size: 0.95rem;
       line-height: 1.7;
@@ -26,7 +26,7 @@
 
     .prose code {
       background-color: #1E1E1E;
-      color: #FF2E63;
+      color: #8B0000;
       padding: 0.3rem 0.6rem;
       border-radius: 0.3rem;
       font-size: 0.95rem;
@@ -40,11 +40,13 @@
 
     .prose {
       color: #E0E0E0;
-      font-size: 1.125rem;
-      line-height: 1.9;
+      font-size: 1.1rem;
+      line-height: 1.8;
       padding: 1.5rem;
       background-color: #2A2A2A;
-      border-radius: 0.5rem;
+      border-radius: 0.75rem;
+      min-height: 250px;
+      width: 100%;
     }
 
     .prose strong {
@@ -55,7 +57,7 @@
     .prose h1, .prose h2, .prose h3, .prose h4 {
       color: #E0E0E0;
       font-weight: 600;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
     }
 
     .prose ul, .prose ol {
@@ -77,65 +79,43 @@
     }
 
     ::-webkit-scrollbar-thumb {
-      background: #00F5D4;
+      background: #008080;
       border-radius: 3px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-      background: #00d1b2;
+      background: #006666;
     }
 
     .sidebar-item:hover {
-      background-color: #FF2E63;
+      background-color: #8B0000;
       color: #E0E0E0;
     }
 
     .sidebar-item {
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
+      border-radius: 0.5rem;
     }
 
     textarea, select {
       background-color: #1E1E1E;
       color: #E0E0E0;
-      border-color: transparent;
-      transition: all 0.2s ease;
+      border-color: #2A2A2A;
+      border-width: 1px;
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
     }
 
     textarea::placeholder {
       color: #E0E0E0;
-      opacity: 0.6;
+      opacity: 0.5;
     }
 
     textarea:focus, select:focus {
       background-color: #1E1E1E;
       outline: none;
-      box-shadow: 0 0 0 2px #00F5D4;
-    }
-
-    .input-container {
-      position: relative;
-    }
-
-    .input-label {
-      position: absolute;
-      top: 1rem;
-      left: 1rem;
-      color: #E0E0E0;
-      opacity: 0.6;
-      font-size: 0.9rem;
-      transition: all 0.2s ease;
-      pointer-events: none;
-    }
-
-    textarea:focus + .input-label,
-    textarea:not(:placeholder-shown) + .input-label {
-      top: -0.75rem;
-      left: 0.75rem;
-      font-size: 0.75rem;
-      background-color: #1E1E1E;
-      padding: 0 0.25rem;
-      opacity: 1;
-      color: #00F5D4;
+      border-color: #008080;
+      box-shadow: 0 0 0 2px rgba(0, 128, 128, 0.3);
     }
 
     @keyframes spin {
@@ -146,7 +126,7 @@
 
     .loader {
       border: 2px solid #1E1E1E;
-      border-top: 2px solid #00F5D4;
+      border-top: 2px solid #008080;
       border-radius: 50%;
       width: 1.5rem;
       height: 1.5rem;
@@ -155,90 +135,211 @@
       vertical-align: middle;
     }
 
-    .analysis-panel {
-      transition: opacity 0.3s ease;
-      overflow-y: auto;
-      max-height: none; /* Remove max-height restriction */
-    }
-
-    .analysis-panel.hidden {
-      opacity: 0;
-      height: 0;
-      overflow: hidden;
-    }
-
-    .analysis-panel:not(.hidden) {
-      opacity: 1;
-      height: auto;
-    }
-
     #selected-review .response-text {
       width: 100%;
-      max-width: none; /* Override prose max-width */
+      max-width: none;
+    }
+
+    .request-text {
+      overflow-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-content {
+      background-color: #1E1E1E;
+      padding: 2rem;
+      border-radius: 0.75rem;
+      max-width: 450px;
+      width: 90%;
+      text-align: center;
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+    }
+
+    .modal.show .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-button {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      margin: 0.5rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .card {
+      background-color: #1E1E1E;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-primary {
+      background-color: #008080;
+      color: #E0E0E0;
+      border-radius: 0.75rem;
+    }
+
+    .btn-primary:hover {
+      background-color: #006666;
+    }
+
+    .btn-primary:disabled {
+      background-color: #003333;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background-color: #2A2A2A;
+      color: #E0E0E0;
+      border-radius: 0.75rem;
+    }
+
+    .btn-secondary:hover {
+      background-color: #3A3A3A;
+    }
+
+    .section-transition {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .section-transition.hidden {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .sidebar {
+      width: 16rem;
+      z-index: 10;
+    }
+
+    @keyframes stat-update {
+      0% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .stat-number {
+      animation: stat-update 0.3s ease;
     }
   </style>
 </head>
 <body class="flex min-h-screen text-gray-200 antialiased font-sans">
 
+  <!-- Модальное окно -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <h3 class="text-xl font-semibold text-[#E0E0E0] mb-4">Подтверждение удаления</h3>
+      <p class="text-sm text-[#E0E0E0] mb-6">Вы уверены, что хотите удалить этот запрос?</p>
+      <div class="flex justify-center gap-4">
+        <button id="confirmDeleteBtn" class="modal-button btn-primary">Удалить</button>
+        <button id="cancelDeleteBtn" class="modal-button btn-secondary">Отмена</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Левое меню -->
-  <aside class="w-72 bg-[#1E1E1E] shadow-md p-4 fixed h-full overflow-y-auto">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-semibold text-[#E0E0E0]">SEO</h2>
+  <aside id="sidebar" class="w-64 bg-[#1E1E1E] shadow-md p-4 fixed h-full overflow-y-auto sidebar">
+    <div class="sidebar-content">
+      <ul class="space-y-2 mt-4">
+        <li>
+          <button class="menu-item w-full text-left py-2 px-3 sidebar-item text-[#E0E0E0] font-medium text-sm flex items-center gap-2" data-section="create">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            Написать отзыв
+          </button>
+        </li>
+        <li>
+          <button class="menu-item w-full text-left py-2 px-3 sidebar-item text-[#E0E0E0] font-medium text-sm flex items-center gap-2" data-section="textometer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 22"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6m6 6v-8m-6 8V9m6 10V7m-9 12V5"></path></svg>
+            Текстомер
+          </button>
+        </li>
+      </ul>
+      <hr class="my-3 border-[#2A2A2A]" />
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-md font-semibold text-[#E0E0E0]">Ваши запросы</h3>
+        <button id="refreshBtn" class="text-[#E0E0E0] hover:bg-[#8B0000] p-2 rounded-full transition-colors duration-300" title="Обновить запросы">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-color="#008080" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </button>
+      </div>
+      <ul id="review-list" class="space-y-1"></ul>
     </div>
-    <ul class="space-y-1">
-      <li><button class="menu-item w-full text-left py-2 px-3 hover:bg-[#FF2E63] rounded-lg transition-colors duration-200 text-[#E0E0E0] font-medium" data-section="create">Создать запрос</button></li>
-      <li><button class="menu-item w-full text-left py-2 px-3 hover:bg-[#FF2E63] rounded-lg transition-colors duration-200 text-[#E0E0E0] font-medium" data-section="settings">Настройки</button></li>
-    </ul>
-    <hr class="my-3 border-[#1E1E1E]" />
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-md font-semibold text-[#E0E0E0]">Список запросов</h3>
-      <button id="refreshBtn" class="text-[#E0E0E0] hover:bg-[#FF2E63] p-2 rounded-full transition-colors duration-200" title="Обновить запросы">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-color="#00F5D4" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-      </button>
-    </div>
-    <ul id="review-list" class="space-y-1"></ul>
   </aside>
 
   <!-- Основной контент -->
-  <main class="flex-1 p-6 ml-72">
-    <!-- Создать запрос -->
-    <section id="create-section" class="hidden">
-      <h2 class="text-2xl font-semibold text-[#E0E0E0] mb-4">Создать запрос</h2>
-      <div class="bg-[#1E1E1E] p-4 rounded-lg shadow-sm">
-        <div class="input-container mb-4">
-          <textarea id="promptInput" class="w-full p-4 rounded-lg resize-y min-h-[120px] text-sm" placeholder=""></textarea>
-          <label class="input-label">Введите запрос...</label>
-        </div>
-        <div class="flex justify-between items-center">
-          <select id="modelSelect" class="p-3 rounded-lg text-sm flex-1 max-w-xs">
-            <option value="magistral-medium-2506">magistral-medium-2506 (думающая)</option>
-            <option value="mistral-medium-2505">mistral-medium-2505</option>
-            <option value="ministral-8b-2410">ministral-8b-2410</option>
-            <option value="ministral-3b-2410">ministral-3b-2410</option>
+  <main id="main-content" class="flex-1 p-8 ml-64">
+    <!-- Поле ввода запроса -->
+    <section id="create-section" class="section-transition flex items-center justify-center min-h-screen">
+      <div class="card p-6 w-full max-w-lg">
+        <textarea id="promptInput" class="w-full p-6 rounded-xl resize-y min-h-[150px] text-base text-[#E0E0E0] border-[#2A2A2A]" placeholder="Введите ваш запрос..."></textarea>
+        <div class="flex justify-between items-center gap-4 mt-4">
+          <select id="modelSelect" class="p-3 rounded-lg text-base flex-1 max-w-xs">
+            <option value="magistral-medium-2506">Magistral Medium 2506</option>
+            <option value="mistral-medium-2505">Mistral Medium 2505</option>
+            <option value="ministral-8b-2410">Ministral 8B 2410</option>
+            <option value="ministral-3b-2410">Ministral 3B 2410</option>
           </select>
-          <button id="generateReviewBtn" class="px-4 py-2 bg-[#FF2E63] text-[#E0E0E0] rounded-lg hover:bg-[#e02858] transition-colors duration-200 text-sm flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          <button id="generateReviewBtn" class="btn-primary px-6 py-3 text-base flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             Отправить
           </button>
         </div>
       </div>
-      <div id="generatingIndicator" class="hidden mt-3 flex items-center gap-2">
+      <div id="generatingIndicator" class="hidden mt-4 flex items-center gap-2">
         <div class="loader"></div>
-        <p class="text-[#00F5D4] text-sm font-medium">Генерация ответа...</p>
+        <p class="text-[#008080] text-base font-medium">Генерация ответа...</p>
       </div>
     </section>
 
     <!-- Запросы -->
-    <section id="reviews-section" class="hidden">
-      <h2 class="text-2xl font-semibold text-[#E0E0E0] mb-4">Запрос</h2>
-      <div id="selected-review" class="bg-[#1E1E1E] p-4 rounded-lg shadow-sm w-full"></div>
+    <section id="reviews-section" class="section-transition hidden">
+      <h2 class="text-3xl font-bold text-[#E0E0E0] mb-6">Ваш запрос</h2>
+      <div id="selected-review" class="card p-6 w-full"></div>
     </section>
 
-    <!-- Настройки -->
-    <section id="settings-section" class="hidden">
-      <h2 class="text-2xl font-semibold text-[#E0E0E0] mb-4">Настройки</h2>
-      <div class="bg-[#1E1E1E] p-4 rounded-lg shadow-sm">
-        <p class="text-[#E0E0E0] text-sm">Здесь будут настройки профиля.</p>
+    <!-- Текстомер -->
+    <section id="textometer-section" class="section-transition hidden">
+      <h2 class="text-3xl font-bold text-[#E0E0E0] mb-6">Текстомер</h2>
+      <div class="card p-6 w-full">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="text-center">
+            <p id="stats-chars-spaces" class="stat-number text-4xl font-bold text-[#008080]">0</p>
+            <p class="text-sm text-[#E0E0E0] opacity-60">Символы (с пробелами)</p>
+          </div>
+          <div class="text-center">
+            <p id="stats-chars-no-spaces" class="stat-number text-4xl font-bold text-[#008080]">0</p>
+            <p class="text-sm text-[#E0E0E0] opacity-60">Символы (без пробелов)</p>
+          </div>
+          <div class="text-center">
+            <p id="stats-words" class="stat-number text-4xl font-bold text-[#008080]">0</p>
+            <p class="text-sm text-[#E0E0E0] opacity-60">Слова</p>
+          </div>
+          <div class="text-center">
+            <p id="stats-sentences" class="stat-number text-4xl font-bold text-[#008080]">0</p>
+            <p class="text-sm text-[#E0E0E0] opacity-60">Предложения</p>
+          </div>
+        </div>
+        <textarea id="statsInput" class="w-full p-4 rounded-lg resize-y min-h-[200px] text-base" placeholder="Введите текст для анализа..."></textarea>
       </div>
     </section>
   </main>
@@ -248,15 +349,106 @@
     const sections = {
       create: document.getElementById("create-section"),
       reviews: document.getElementById("reviews-section"),
-      settings: document.getElementById("settings-section")
+      textometer: document.getElementById("textometer-section")
     };
 
     let reviewsData = [];
+    const promptInput = document.getElementById("promptInput");
+    const modelSelect = document.getElementById("modelSelect");
+    let saveTimeout;
 
+    // Auto-resize textarea
+    function autoResizeTextarea(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+
+    promptInput.addEventListener('input', () => autoResizeTextarea(promptInput));
+
+    // Function to show modal
+    function showModal({ onConfirm, onCancel }) {
+      const modal = document.getElementById("confirmModal");
+      const confirmBtn = document.getElementById("confirmDeleteBtn");
+      const cancelBtn = document.getElementById("cancelDeleteBtn");
+
+      const newConfirmBtn = confirmBtn.cloneNode(true);
+      const newCancelBtn = cancelBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+      cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+      modal.classList.add("show");
+
+      newConfirmBtn.addEventListener("click", () => {
+        onConfirm();
+        modal.classList.remove("show");
+      });
+
+      newCancelBtn.addEventListener("click", () => {
+        onCancel();
+        modal.classList.remove("show");
+      });
+
+      document.addEventListener("keydown", function handler(e) {
+        if (e.key === "Escape" && modal.classList.contains("show")) {
+          modal.classList.remove("show");
+          document.removeEventListener("keydown", handler);
+        }
+      });
+    }
+
+    // Function to save settings
+    async function saveSettings() {
+      const request = promptInput.value.trim();
+      const model = modelSelect.value;
+      try {
+        const res = await fetch(`${API_BASE_URL}/user/setting/update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ request, model }),
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Ошибка при обновлении настроек");
+        }
+      } catch (err) {
+        console.error("Update Settings Error:", err);
+      }
+    }
+
+    // Debounce save settings
+    function debounceSaveSettings() {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(saveSettings, 500);
+    }
+
+    // Function to load settings
+    async function loadSettings() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/user/setting/get`);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Ошибка при загрузке настроек");
+        }
+        const data = await res.json();
+        if (data && typeof data === 'object') {
+          if (data.request) promptInput.value = data.request;
+          if (data.model) modelSelect.value = data.model;
+          autoResizeTextarea(promptInput);
+        }
+      } catch (err) {
+        console.error("Load Settings Error:", err);
+      }
+    }
+
+    // Save settings on input change (debounced)
+    promptInput.addEventListener('input', debounceSaveSettings);
+
+    // Save settings on tab switch
     document.querySelectorAll('.menu-item').forEach(btn => {
       btn.addEventListener('click', () => {
         Object.values(sections).forEach(sec => sec.classList.add("hidden"));
         sections[btn.dataset.section].classList.remove("hidden");
+        saveSettings();
       });
     });
 
@@ -264,11 +456,9 @@
       loadReviewList();
     });
 
-    const promptInput = document.getElementById("promptInput");
-
     document.getElementById("generateReviewBtn").addEventListener("click", async () => {
       const prompt = promptInput.value.trim();
-      const model = document.getElementById("modelSelect").value;
+      const model = modelSelect.value;
 
       if (!prompt) return alert("Введите запрос для ИИ");
 
@@ -292,6 +482,8 @@
         }
 
         promptInput.value = "";
+        autoResizeTextarea(promptInput);
+        await saveSettings();
         await loadReviewList();
         sections.reviews.classList.remove("hidden");
         Object.keys(sections).forEach(key => {
@@ -321,16 +513,16 @@
         reviewsData.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         if (reviewsData.length === 0) {
-          listContainer.innerHTML = "<p class='text-[#E0E0E0] text-sm font-medium'>Нет запросов</p>";
+          listContainer.innerHTML = "<p class='text-[#E0E0E0] text-sm font-medium'>Тут пусто</p>";
           return;
         }
 
         listContainer.innerHTML = reviewsData.map((item, index) => `
           <li class="flex items-center justify-between">
-            <button class="sidebar-item flex-1 text-left py-2 px-3 rounded-lg text-[#E0E0E0] text-sm truncate transition-colors duration-200" data-index="${index}" title="${item.request}">
+            <button class="sidebar-item flex-1 text-left py-2 px-3 text-[#E0E0E0] text-sm truncate" data-index="${index}" title="${item.request}">
               ${item.request.slice(0, 25)}${item.request.length > 25 ? '...' : ''}
             </button>
-            <button class="delete-review-btn text-[#E0E0E0] hover:bg-[#FF2E63] p-1 rounded-full transition-colors duration-200" data-id="${item.id}" title="Удалить запрос">
+            <button class="delete-review-btn text-[#E0E0E0] hover:bg-[#8B0000] p-1 rounded-full transition-colors duration-300" data-id="${item.id}" title="Удалить запрос">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0v3m4-3v3m-7 4v8m4-8v8m4-8v8"></path></svg>
             </button>
           </li>
@@ -344,221 +536,202 @@
             Object.keys(sections).forEach(key => {
               if (key !== "reviews") sections[key].classList.add("hidden");
             });
+            saveSettings();
           });
         });
 
         document.querySelectorAll(".delete-review-btn").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            if (!confirm("Удалить запрос?")) return;
-            try {
-              await fetch(`${API_BASE_URL}/user/review/delete`, {
-                method: "POST",
-                body: new URLSearchParams({ id: btn.dataset.id }),
-              });
-              const listItem = btn.closest("li");
-              listItem.classList.add("opacity-0", "scale-95");
-              setTimeout(() => {
-                listItem.remove();
-                loadReviewList();
-              }, 300);
-            } catch (err) {
-              console.error("Ошибка удаления:", err);
-              alert("Не удалось удалить запрос.");
-            }
+          btn.addEventListener("click", () => {
+            showModal({
+              onConfirm: async () => {
+                try {
+                  await fetch(`${API_BASE_URL}/user/review/delete`, {
+                    method: "POST",
+                    body: new URLSearchParams({ id: btn.dataset.id }),
+                  });
+                  const listItem = btn.closest("li");
+                  listItem.classList.add("opacity-0", "scale-95");
+                  setTimeout(() => {
+                    listItem.remove();
+                    loadReviewList();
+                  }, 300);
+                } catch (err) {
+                  console.error("Ошибка удаления:", err);
+                  alert("Не удалось удалить запрос.");
+                }
+              },
+              onCancel: () => {}
+            });
           });
         });
 
       } catch (err) {
-        listContainer.innerHTML = `<p class="text-[#FF2E63] text-sm font-medium">Ошибка загрузки: ${err.message}</p>`;
+        listContainer.innerHTML = `<p class="text-[#8B0000] text-sm font-medium">Ошибка загрузки: ${err.message}</p>`;
       }
     }
 
-    async function analyzeText(text, container) {
-      const analysisContainer = container.querySelector(".analysis-content");
-      const indicator = container.querySelector(".analysis-indicator");
-      const toggleBtn = container.querySelector(".toggle-analysis-btn");
-
-      if (!text) {
-        analysisContainer.innerHTML = `<p class="text-[#FF2E63] text-sm">Текст для анализа отсутствует</p>`;
-        toggleBtn.disabled = true;
-        return;
-      }
-
-      indicator.classList.remove("hidden");
-      analysisContainer.innerHTML = "";
-      toggleBtn.disabled = true;
-
+    async function updateReviewText(id, text) {
+      console.log("Updating review:", { id, text });
       try {
-        const res = await fetch(`${API_BASE_URL}/user/review/text/analyze`, {
+        const res = await fetch(`${API_BASE_URL}/user/review/update`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ text }),
+          body: new URLSearchParams({ id, text }),
         });
-
         if (!res.ok) {
           const errorData = await res.json();
-          throw new Error(errorData.message || `Ошибка анализа текста (код ${res.status})`);
+          throw new Error(errorData.message || "Ошибка при обновлении ответа");
         }
-
-        const data = await res.json();
-        console.log("Analysis API Response:", data);
-        if (!data.ok) throw new Error("Анализ не удался");
-
-        const { response, time } = data;
-        const {
-          sentences = [],
-          language = "Не определён",
-          languageIsReliable = false,
-          entities = [],
-          entailments = []
-        } = response || {};
-
-        analysisContainer.innerHTML = `
-          <div class="space-y-4 text-sm text-[#E0E0E0]">
-            <div>
-              <h4 class="font-semibold text-[#00F5D4] mb-2">Общая информация</h4>
-              <p><strong>Язык:</strong> ${language} (${languageIsReliable ? 'Надёжен' : 'Не надёжен'})</p>
-              <p><strong>Время анализа:</strong> ${time.toFixed(2)} сек</p>
-            </div>
-            <div>
-              <h4 class="font-semibold text-[#00F5D4] mb-2">Предложения (${sentences.length})</h4>
-              ${sentences.length ? `
-                <ul class="list-disc ml-4">
-                  ${sentences.map((sentence, index) => {
-                    const words = sentence && typeof sentence === 'object' && Array.isArray(sentence.words) ? sentence.words : [];
-                    if (!Array.isArray(words)) {
-                      console.warn(`Invalid sentence at index ${index}:`, sentence);
-                      return `<li>Предложение #${index + 1}: Ошибка данных (не является массивом слов)</li>`;
-                    }
-                    return `
-                      <li>
-                        Предложение #${index + 1}: ${words.map(w => w.token || "N/A").join(" ") || "Пустое предложение"}
-                        ${words.length ? `
-                          <ul class="list-circle ml-4 mt-1">
-                            ${words.map(w => `
-                              <li>
-                                Слово: ${w.token || "N/A"} (Стем: ${w.stem || "N/A"}, Часть речи: ${w.partOfSpeech || "Не указана"}, Позиция: ${w.startingPos || 0}-${w.endingPos || 0})
-                              </li>
-                            `).join("")}
-                          </ul>
-                        ` : ""}
-                      </li>
-                    `;
-                  }).join("")}
-                </ul>
-              ` : "Предложения не обнаружены."}
-            </div>
-            <div>
-              <h4 class="font-semibold text-[#00F5D4] mb-2">Сущности (${Array.isArray(entities) ? entities.length : 0})</h4>
-              ${Array.isArray(entities) && entities.length ? `
-                <ul class="list-disc ml-4">
-                  ${entities.map(e => `
-                    <li>
-                      <p><strong>Текст:</strong> ${e.matchedText || "N/A"}</p>
-                      <p><strong>Тип:</strong> ${(e.type || []).join(", ") || "Не указан"}</p>
-                      <p><strong>Викиданные:</strong> ${e.wikidataId || 'N/A'}</p>
-                      <p><strong>Релевантность:</strong> ${(e.relevanceScore || 0).toFixed(2)}</p>
-                      <p><strong>Уверенность:</strong> ${(e.confidenceScore || 0).toFixed(2)}</p>
-                      ${e.wikiLink ? `<p><a href="${e.wikiLink}" target="_blank" class="text-blue-400 hover:underline">Ссылка на Wikipedia</a></p>` : ""}
-                    </li>
-                  `).join("")}
-                </ul>
-              ` : "Сущности не обнаружены."}
-            </div>
-            <div>
-              <h4 class="font-semibold text-[#00F5D4] mb-2">Утверждения (${Array.isArray(entailments) ? entailments.length : 0})</h4>
-              ${Array.isArray(entailments) && entailments.length ? `
-                <ul class="list-disc ml-4">
-                  ${entailments.map(e => `
-                    <li>
-                      <p><strong>ID:</strong> ${e.id}</p>
-                      <p><strong>Дерево:</strong> ${e.entailedTree || "N/A"}</p>
-                      <p><strong>Оценка:</strong> ${(e.score || 0).toFixed(2)}</p>
-                      <p><strong>Контекст:</strong> ${(e.contextScore || 0).toFixed(2)}</p>
-                      <p><strong>Априорная:</strong> ${(e.priorScore || 0).toFixed(2)}</p>
-                    </li>
-                  `).join("")}
-                </ul>
-              ` : "Утверждения не обнаружены."}
-            </div>
-          </div>
-        `;
+        console.log("Review updated successfully");
       } catch (err) {
-        console.error("Analysis Error:", err);
-        analysisContainer.innerHTML = `<p class="text-[#FF2E63] text-sm">Ошибка анализа: ${err.message} (проверьте формат данных)</p>`;
-      } finally {
-        indicator.classList.add("hidden");
-        toggleBtn.disabled = false;
+        console.error("Update Review Error:", err);
+        alert(`Ошибка: ${err.message || "Не удалось обновить ответ."}`);
+        throw err;
       }
     }
 
     function displayReview(index) {
       const item = reviewsData[index];
+      let isEditing = false;
       const container = document.getElementById("selected-review");
-      container.innerHTML = `
-        <div class="space-y-4">
-          <div class="flex justify-between items-center">
-            <h3 class="font-semibold text-lg text-[#E0E0E0]">${item.request.slice(0, 50)}${item.request.length > 50 ? '...' : ''}</h3>
-            <span class="text-xs text-[#E0E0E0] opacity-60">${formatDate(item.date)}</span>
-          </div>
-          <div class="text-sm text-[#E0E0E0] response-text prose max-w-none">${marked.parse(item.answer || "")}</div>
-          <button class="toggle-analysis-btn px-4 py-2 bg-[#00F5D4] text-[#1E1E1E] rounded-lg hover:bg-[#00d1b2] transition-colors duration-200 text-sm flex items-center gap-2 ${!item.answer ? 'opacity-50 cursor-not-allowed' : ''}" ${!item.answer ? 'disabled' : ''} aria-label="Анализировать текст ответа">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5h6m-6 4h6m-6 4h6m2 4H7a2 2 0 01-2-2V5a2 2 0 012-2h10a2 2 0 012-2v14a2 2 0 01-2 2z"></path></svg>
-            Анализ текста
-          </button>
-          <div class="analysis-panel hidden" aria-hidden="true">
-            <div class="analysis-indicator hidden flex items-center gap-2 mb-2">
-              <div class="loader"></div>
-              <p class="text-[#00F5D4] text-sm font-medium">Анализ текста...</p>
-            </div>
-            <div class="analysis-content bg-[#2A2A2A] p-4 rounded-lg"></div>
-          </div>
-          <div class="bg-[#1E1E1E] p-3 rounded-md space-y-2 text-xs text-[#E0E0E0]">
-            <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-[#00F5D4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-              <p><strong>Модель:</strong> ${item.model}</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <svg class="w-4 h-4 text-[#00F5D4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-              <p><strong>Статистика:</strong> ${getStats(item.answer)}</p>
-            </div>
-            ${item.think && item.think.trim()
-              ? `<div class="flex items-start gap-2">
-                   <svg class="w-4 h-4 text-[#00F5D4] mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                   <div>
-                     <p><strong>Мысль:</strong></p>
-                     <span class="block mt-1 bg-[#121212] p-2 rounded-md text-xs">${marked.parse(item.think)}</span>
-                   </div>
-                 </div>`
-              : ''
-            }
-          </div>
-        </div>
-      `;
 
-      const toggleBtn = container.querySelector(".toggle-analysis-btn");
-      const analysisPanel = container.querySelector(".analysis-panel");
-      toggleBtn.addEventListener("click", () => {
-        if (analysisPanel.classList.contains("hidden")) {
-          analysisPanel.classList.remove("hidden");
-          analysisPanel.setAttribute("aria-hidden", "false");
-          if (!analysisPanel.querySelector(".analysis-content").innerHTML) {
-            analyzeText(item.answer, container);
-          }
-        } else {
-          analysisPanel.classList.add("hidden");
-          analysisPanel.setAttribute("aria-hidden", "true");
+      function renderContent() {
+        console.log("Rendering content, isEditing:", isEditing);
+        container.innerHTML = `
+          <div class="space-y-6">
+            <div class="flex justify-between items-center">
+              <h3 class="font-semibold text-xl text-[#E0E0E0] request-text">${item.request}</h3>
+              <span class="text-sm text-[#E0E0E0] opacity-60">${formatDate(item.date)}</span>
+            </div>
+            <div class="response-container text-base text-[#E0E0E0] response-text ${isEditing ? '' : 'prose'} max-w-none">
+              ${isEditing 
+                ? `<textarea class="response-editor w-full p-4 rounded-lg resize-y min-h-[250px] text-base bg-[#2A2A2A]" style="color: #E0E0E0;">${item.answer || ""}</textarea>`
+                : marked.parse(item.answer || "")}
+            </div>
+            <div class="flex gap-4">
+              <button class="toggle-edit-btn btn-primary px-6 py-3 rounded-lg text-base flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isEditing ? 'M5 13l4 4L19 7' : 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'}"></path></svg>
+                ${isEditing ? 'Сохранить' : 'Редактировать'}
+              </button>
+              <button class="cancel-edit-btn btn-secondary px-6 py-3 rounded-lg text-base flex items-center gap-2 ${isEditing ? '' : 'hidden'}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                Отменить
+              </button>
+            </div>
+            <div id="saveIndicator" class="hidden mt-2 text-[#008080] text-base">Ответ сохранен</div>
+            <div class="stats-container bg-[#1E1E1E] p-4 rounded-lg space-y-3 text-sm text-[#E0E0E0]">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-[#008080]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                <p><strong>Модель:</strong> ${item.model}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-[#008080]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                <p class="stats-text"><strong>Статистика:</strong> ${getStats(item.answer)}</p>
+              </div>
+              ${item.think && item.think.trim()
+                ? `<div class="flex items-start gap-2">
+                     <svg class="w-5 h-5 text-[#008080] mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                     <div>
+                       <p><strong>Мысль:</strong></p>
+                       <span class="block mt-1 bg-[#121212] p-3 rounded-lg text-sm">${marked.parse(item.think)}</span>
+                     </div>
+                   </div>`
+                : ''
+              }
+            </div>
+          </div>
+        `;
+
+        const toggleEditBtn = container.querySelector(".toggle-edit-btn");
+        const cancelEditBtn = container.querySelector(".cancel-edit-btn");
+        const statsText = container.querySelector(".stats-text");
+
+        if (toggleEditBtn) {
+          toggleEditBtn.addEventListener("click", async () => {
+            console.log("Edit button clicked, isEditing:", isEditing);
+            if (isEditing) {
+              const editor = container.querySelector(".response-editor");
+              if (!editor) {
+                console.error("Response editor not found");
+                alert("Ошибка: поле редактирования не найдено.");
+                return;
+              }
+              const newText = editor.value.trim();
+              console.log("Saving new text:", newText);
+              try {
+                item.answer = newText;
+                await updateReviewText(item.id, newText);
+                const saveIndicator = container.querySelector("#saveIndicator");
+                saveIndicator.classList.remove("hidden");
+                setTimeout(() => saveIndicator.classList.add("hidden"), 2000);
+                statsText.innerHTML = `<strong>Статистика:</strong> ${getStats(newText)}`;
+              } catch (err) {
+                return;
+              }
+            }
+            isEditing = !isEditing;
+            renderContent();
+          });
         }
-      });
+
+        if (cancelEditBtn) {
+          cancelEditBtn.addEventListener("click", () => {
+            console.log("Cancel edit clicked");
+            isEditing = false;
+            renderContent();
+          });
+        }
+
+        if (isEditing) {
+          const editor = container.querySelector(".response-editor");
+          if (editor) {
+            autoResizeTextarea(editor);
+            editor.addEventListener("input", () => {
+              autoResizeTextarea(editor);
+              const text = editor.value;
+              statsText.innerHTML = `<strong>Статистика:</strong> ${getStats(text)}`;
+            });
+          }
+        }
+      }
+
+      renderContent();
     }
 
     function getStats(text) {
-      if (!text) return "0 символов (с пробелами), 0 символов (без пробелов), 0 слов";
+      if (!text) return "0 символов (с пробелами), 0 символов (без пробелов), 0 слов, 0 предложений";
       const charsWithSpaces = text.length;
       const charsWithoutSpaces = text.replace(/\s/g, '').length;
       const words = text.trim().split(/\s+/).filter(Boolean).length;
-      return `${charsWithSpaces} символов (с пробелами), ${charsWithoutSpaces} символов (без пробелов), ${words} слов`;
+      const sentences = text.trim().split(/[.!?]+/).filter(Boolean).length;
+      return `${charsWithSpaces} символов (с пробелами), ${charsWithoutSpaces} символов (без пробелов), ${words} слов, ${sentences} предложений`;
     }
+
+    function updateStatistics() {
+      const text = document.getElementById("statsInput").value;
+      const charsWithSpaces = text.length;
+      const charsWithoutSpaces = text.replace(/\s/g, '').length;
+      const words = text.trim().split(/\s+/).filter(Boolean).length;
+      const sentences = text.trim().split(/[.!?]+/).filter(Boolean).length;
+
+      const updateStat = (id, value) => {
+        const element = document.getElementById(id);
+        element.textContent = value;
+        element.classList.remove("stat-number");
+        void element.offsetWidth;
+        element.classList.add("stat-number");
+      };
+
+      updateStat("stats-chars-spaces", charsWithSpaces);
+      updateStat("stats-chars-no-spaces", charsWithoutSpaces);
+      updateStat("stats-words", words);
+      updateStat("stats-sentences", sentences);
+    }
+
+    document.getElementById("statsInput")?.addEventListener("input", () => {
+      autoResizeTextarea(document.getElementById("statsInput"));
+      updateStatistics();
+    });
 
     function formatDate(isoDate) {
       try {
@@ -575,8 +748,15 @@
       }
     }
 
-    loadReviewList();
-    sections.create.classList.remove("hidden");
+    // Load settings and reviews on page load
+    async function initialize() {
+      await loadSettings();
+      await loadReviewList();
+      sections.create.classList.remove("hidden");
+      updateStatistics();
+    }
+
+    initialize();
   </script>
 </body>
 </html>

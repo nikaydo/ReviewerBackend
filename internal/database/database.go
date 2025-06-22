@@ -86,6 +86,38 @@ func (d *Database) Get(user string) ([]models.UserTab, error) {
 	return ls, nil
 }
 
+func (d *Database) GetSettings(username string) (models.UserSettings, error) {
+	rows := d.Pg.QueryRow(context.Background(), "SELECT * from userSetting where username = $1", username)
+	var u models.UserSettings
+	if err := rows.Scan(&u.Id, &u.Username, &u.Request, &u.Model); err != nil {
+		log.Fatalf("Ошибка чтения строки: %v", err)
+	}
+	return u, nil
+}
+func (d *Database) SaveSettings(username, request, model string) error {
+	_, err := d.Pg.Exec(context.Background(), "INSERT INTO userSetting (username, request, model) VALUES ($1, $2, $3)", username, request, model)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *Database) UpdateSettings(username, request, model string) error {
+	_, err := d.Pg.Exec(context.Background(), "UPDATE userSetting SET request = $1, model = $2 WHERE username = $3", request, model, username)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *Database) UpdateReview(username, r, id string) error {
+	_, err := d.Pg.Exec(context.Background(), "UPDATE reviewT SET answer = $1 WHERE username = $2 AND id = $3", r, username, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (d *Database) GetOne(user, id string) (models.UserTab, error) {
 	rows := d.Pg.QueryRow(context.Background(), "SELECT id,request,answer,think,date,model FROM reviewT WHERE username = $1 AND id = $2", user, id)
 
