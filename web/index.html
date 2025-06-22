@@ -47,6 +47,9 @@
       border-radius: 0.75rem;
       min-height: 250px;
       width: 100%;
+      max-width: 100%;
+      overflow-wrap: break-word;
+      word-break: break-word;
     }
 
     .prose strong {
@@ -137,7 +140,17 @@
 
     #selected-review .response-text {
       width: 100%;
-      max-width: none;
+      max-width: 100%;
+    }
+
+    .response-editor {
+      max-width: 100%;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+
+    .response-container {
+      width: 100%;
     }
 
     .request-text {
@@ -219,6 +232,21 @@
       background-color: #3A3A3A;
     }
 
+    .btn-toggle {
+      background-color: #2A2A2A;
+      color: #E0E0E0;
+      border-radius: 0.75rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-toggle.active {
+      background-color: #008080;
+    }
+
+    .btn-toggle:hover {
+      background-color: #006666;
+    }
+
     .section-transition {
       transition: opacity 0.3s ease, transform 0.3s ease;
     }
@@ -270,7 +298,7 @@
         </li>
         <li>
           <button class="menu-item w-full text-left py-2 px-3 sidebar-item text-[#E0E0E0] font-medium text-sm flex items-center gap-2" data-section="textometer">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 22"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6m6 6v-8m-6 8V9m6 10V7m-9 12V5"></path></svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6m6 6v-8m-6 8V9m6 10V7m-9 12V5"></path></svg>
             Текстомер
           </button>
         </li>
@@ -283,6 +311,11 @@
         </button>
       </div>
       <ul id="review-list" class="space-y-1"></ul>
+      <hr class="my-3 border-[#2A2A2A]" />
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-md font-semibold text-[#E0E0E0]">Выбранные вами</h3>
+      </div>
+      <ul id="favorite-list" class="space-y-1"></ul>
     </div>
   </aside>
 
@@ -292,13 +325,16 @@
     <section id="create-section" class="section-transition flex items-center justify-center min-h-screen">
       <div class="card p-6 w-full max-w-lg">
         <textarea id="promptInput" class="w-full p-6 rounded-xl resize-y min-h-[150px] text-base text-[#E0E0E0] border-[#2A2A2A]" placeholder="Введите ваш запрос..."></textarea>
-        <div class="flex justify-between items-center gap-4 mt-4">
+        <div class="flex justify-between items-center gap-4 mt-4 flex-wrap">
           <select id="modelSelect" class="p-3 rounded-lg text-base flex-1 max-w-xs">
-            <option value="magistral-medium-2506">Magistral Medium 2506</option>
             <option value="mistral-medium-2505">Mistral Medium 2505</option>
             <option value="ministral-8b-2410">Ministral 8B 2410</option>
             <option value="ministral-3b-2410">Ministral 3B 2410</option>
           </select>
+          <button id="thinkToggleBtn" class="btn-toggle px-4 py-2 rounded-lg text-base flex items-center gap-2" data-think="false">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+            Пораскинуть мозгами
+          </button>
           <button id="generateReviewBtn" class="btn-primary px-6 py-3 text-base flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
             Отправить
@@ -355,6 +391,7 @@
     let reviewsData = [];
     const promptInput = document.getElementById("promptInput");
     const modelSelect = document.getElementById("modelSelect");
+    const thinkToggleBtn = document.getElementById("thinkToggleBtn");
     let saveTimeout;
 
     // Auto-resize textarea
@@ -364,6 +401,14 @@
     }
 
     promptInput.addEventListener('input', () => autoResizeTextarea(promptInput));
+
+    // Toggle think mode
+    thinkToggleBtn.addEventListener("click", () => {
+      const isActive = thinkToggleBtn.dataset.think === "true";
+      thinkToggleBtn.dataset.think = !isActive;
+      thinkToggleBtn.classList.toggle("active", !isActive);
+      saveSettings();
+    });
 
     // Function to show modal
     function showModal({ onConfirm, onCancel }) {
@@ -400,11 +445,12 @@
     async function saveSettings() {
       const request = promptInput.value.trim();
       const model = modelSelect.value;
+      const think = thinkToggleBtn.dataset.think === "true";
       try {
         const res = await fetch(`${API_BASE_URL}/user/setting/update`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ request, model }),
+          body: new URLSearchParams({ request, model, think }),
         });
         if (!res.ok) {
           const errorData = await res.json();
@@ -433,6 +479,10 @@
         if (data && typeof data === 'object') {
           if (data.request) promptInput.value = data.request;
           if (data.model) modelSelect.value = data.model;
+          if (data.think) {
+            thinkToggleBtn.dataset.think = data.think;
+            thinkToggleBtn.classList.toggle("active", data.think);
+          }
           autoResizeTextarea(promptInput);
         }
       } catch (err) {
@@ -458,7 +508,7 @@
 
     document.getElementById("generateReviewBtn").addEventListener("click", async () => {
       const prompt = promptInput.value.trim();
-      const model = modelSelect.value;
+      const model = thinkToggleBtn.dataset.think === "true" ? "magistral-medium-2506" : modelSelect.value;
 
       if (!prompt) return alert("Введите запрос для ИИ");
 
@@ -500,9 +550,117 @@
       }
     });
 
+    function renderReviewLists() {
+      const reviewListContainer = document.getElementById("review-list");
+      const favoriteListContainer = document.getElementById("favorite-list");
+
+      const favoriteReviews = reviewsData.filter(item => item.favorite);
+      const nonFavoriteReviews = reviewsData.filter(item => !item.favorite);
+
+      reviewListContainer.innerHTML = nonFavoriteReviews.length === 0
+        ? "<p class='text-[#E0E0E0] text-sm font-medium'>Тут пусто</p>"
+        : nonFavoriteReviews.map((item, index) => `
+            <li class="flex items-center justify-between">
+              <button class="sidebar-item flex-1 text-left py-2 px-3 text-[#E0E0E0] text-sm truncate" data-index="${reviewsData.findIndex(r => r.id === item.id)}" title="${item.request}">
+                ${item.request.slice(0, 25)}${item.request.length > 25 ? '...' : ''}
+              </button>
+              <div class="flex items-center gap-1">
+                <button class="favorite-btn text-[#E0E0E0] hover:bg-[#8B0000] p-1 rounded-full transition-colors duration-300" data-id="${item.id}" data-favorite="${item.favorite}" title="${item.favorite ? 'Убрать из избранного' : 'Добавить в избранное'}">
+                  <svg class="w-4 h-4" fill="${item.favorite ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.286 7.07h7.39c.964 0 1.365 1.23.588 1.81l-5.975 4.34 2.286 7.07c.3.921-.755 1.688-1.54 1.1L12 19.347l-5.975 4.34c-.785.588-1.84-.179-1.54-1.1l2.286-7.07-5.975-4.34c-.777-.58-.376-1.81.588-1.81h7.39l2.286-7.07z"/></svg>
+                </button>
+                <button class="delete-review-btn text-[#E0E0E0] hover:bg-[#8B0000] p-1 rounded-full transition-colors duration-300" data-id="${item.id}" title="Удалить запрос">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0v3m4-3v3m-7 4v8m4-8v8m4-8v8"></path></svg>
+                </button>
+              </div>
+            </li>
+          `).join("");
+
+      favoriteListContainer.innerHTML = favoriteReviews.length === 0
+        ? "<p class='text-[#E0E0E0] text-sm font-medium'>Тут пусто</p>"
+        : favoriteReviews.map((item, index) => `
+            <li class="flex items-center justify-between">
+              <button class="sidebar-item flex-1 text-left py-2 px-3 text-[#E0E0E0] text-sm truncate" data-index="${reviewsData.findIndex(r => r.id === item.id)}" title="${item.request}">
+                ${item.request.slice(0, 25)}${item.request.length > 25 ? '...' : ''}
+              </button>
+              <div class="flex items-center gap-1">
+                <button class="favorite-btn text-[#E0E0E0] hover:bg-[#8B0000] p-1 rounded-full transition-colors duration-300" data-id="${item.id}" data-favorite="${item.favorite}" title="${item.favorite ? 'Убрать из избранного' : 'Добавить в избранное'}">
+                  <svg class="w-4 h-4" fill="${item.favorite ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.286 7.07h7.39c.964 0 1.365 1.23.588 1.81l-5.975 4.34 2.286 7.07c.3.921-.755 1.688-1.54 1.1L12 19.347l-5.975 4.34c-.785.588-1.84-.179-1.54-1.1l2.286-7.07-5.975-4.34c-.777-.58-.376-1.81.588-1.81h7.39l2.286-7.07z"/></svg>
+                </button>
+                <button class="delete-review-btn text-[#E0E0E0] hover:bg-[#8B0000] p-1 rounded-full transition-colors duration-300" data-id="${item.id}" title="Удалить запрос">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0v3m4-3v3m-7 4v8m4-8v8m4-8v8"></path></svg>
+                </button>
+              </div>
+            </li>
+          `).join("");
+
+      document.querySelectorAll(".sidebar-item").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const index = btn.dataset.index;
+          displayReview(index);
+          sections.reviews.classList.remove("hidden");
+          Object.keys(sections).forEach(key => {
+            if (key !== "reviews") sections[key].classList.add("hidden");
+          });
+          saveSettings();
+        });
+      });
+
+      document.querySelectorAll(".delete-review-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          showModal({
+            onConfirm: async () => {
+              try {
+                await fetch(`${API_BASE_URL}/user/review/delete`, {
+                  method: "POST",
+                  body: new URLSearchParams({ id: btn.dataset.id }),
+                });
+                const listItem = btn.closest("li");
+                listItem.classList.add("opacity-0", "scale-95");
+                setTimeout(() => {
+                  listItem.remove();
+                  reviewsData = reviewsData.filter(item => item.id !== btn.dataset.id);
+                  renderReviewLists();
+                }, 300);
+              } catch (err) {
+                console.error("Ошибка удаления:", err);
+                alert("Не удалось удалить запрос.");
+              }
+            },
+            onCancel: () => {}
+          });
+        });
+      });
+
+      document.querySelectorAll(".favorite-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const favorite = btn.dataset.favorite === "true";
+          const review = reviewsData.find(r => r.id === id);
+          if (review) {
+            review.favorite = !favorite;
+            renderReviewLists();
+            try {
+              await fetch(`${API_BASE_URL}/user/review/favorite/set`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ id, favorite: !favorite }),
+              });
+            } catch (err) {
+              console.error("Ошибка изменения избранного:", err);
+              alert("Не удалось обновить статус избранного.");
+              review.favorite = favorite; // Revert on error
+              renderReviewLists();
+            }
+          }
+        });
+      });
+    }
+
     async function loadReviewList() {
-      const listContainer = document.getElementById("review-list");
-      listContainer.innerHTML = '<div class="loader mx-auto"></div>';
+      const reviewListContainer = document.getElementById("review-list");
+      const favoriteListContainer = document.getElementById("favorite-list");
+      reviewListContainer.innerHTML = '<div class="loader mx-auto"></div>';
+      favoriteListContainer.innerHTML = '<div class="loader mx-auto"></div>';
 
       try {
         const res = await fetch(`${API_BASE_URL}/user/review/get`);
@@ -511,62 +669,10 @@
         if (!Array.isArray(reviewsData)) throw new Error("Неверный формат данных");
 
         reviewsData.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-        if (reviewsData.length === 0) {
-          listContainer.innerHTML = "<p class='text-[#E0E0E0] text-sm font-medium'>Тут пусто</p>";
-          return;
-        }
-
-        listContainer.innerHTML = reviewsData.map((item, index) => `
-          <li class="flex items-center justify-between">
-            <button class="sidebar-item flex-1 text-left py-2 px-3 text-[#E0E0E0] text-sm truncate" data-index="${index}" title="${item.request}">
-              ${item.request.slice(0, 25)}${item.request.length > 25 ? '...' : ''}
-            </button>
-            <button class="delete-review-btn text-[#E0E0E0] hover:bg-[#8B0000] p-1 rounded-full transition-colors duration-300" data-id="${item.id}" title="Удалить запрос">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0v3m4-3v3m-7 4v8m4-8v8m4-8v8"></path></svg>
-            </button>
-          </li>
-        `).join("");
-
-        document.querySelectorAll(".sidebar-item").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const index = btn.dataset.index;
-            displayReview(index);
-            sections.reviews.classList.remove("hidden");
-            Object.keys(sections).forEach(key => {
-              if (key !== "reviews") sections[key].classList.add("hidden");
-            });
-            saveSettings();
-          });
-        });
-
-        document.querySelectorAll(".delete-review-btn").forEach(btn => {
-          btn.addEventListener("click", () => {
-            showModal({
-              onConfirm: async () => {
-                try {
-                  await fetch(`${API_BASE_URL}/user/review/delete`, {
-                    method: "POST",
-                    body: new URLSearchParams({ id: btn.dataset.id }),
-                  });
-                  const listItem = btn.closest("li");
-                  listItem.classList.add("opacity-0", "scale-95");
-                  setTimeout(() => {
-                    listItem.remove();
-                    loadReviewList();
-                  }, 300);
-                } catch (err) {
-                  console.error("Ошибка удаления:", err);
-                  alert("Не удалось удалить запрос.");
-                }
-              },
-              onCancel: () => {}
-            });
-          });
-        });
-
+        renderReviewLists();
       } catch (err) {
-        listContainer.innerHTML = `<p class="text-[#8B0000] text-sm font-medium">Ошибка загрузки: ${err.message}</p>`;
+        reviewListContainer.innerHTML = `<p class="text-[#8B0000] text-sm font-medium">Ошибка загрузки: ${err.message}</p>`;
+        favoriteListContainer.innerHTML = `<p class="text-[#8B0000] text-sm font-medium">Ошибка загрузки: ${err.message}</p>`;
       }
     }
 
@@ -608,7 +714,7 @@
                 ? `<textarea class="response-editor w-full p-4 rounded-lg resize-y min-h-[250px] text-base bg-[#2A2A2A]" style="color: #E0E0E0;">${item.answer || ""}</textarea>`
                 : marked.parse(item.answer || "")}
             </div>
-            <div class="flex gap-4">
+            <div class="flex gap-4 flex-wrap">
               <button class="toggle-edit-btn btn-primary px-6 py-3 rounded-lg text-base flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isEditing ? 'M5 13l4 4L19 7' : 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'}"></path></svg>
                 ${isEditing ? 'Сохранить' : 'Редактировать'}
@@ -616,6 +722,10 @@
               <button class="cancel-edit-btn btn-secondary px-6 py-3 rounded-lg text-base flex items-center gap-2 ${isEditing ? '' : 'hidden'}">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 Отменить
+              </button>
+              <button class="repeat-request-btn btn-primary px-6 py-3 rounded-lg text-base flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Повторить запрос
               </button>
             </div>
             <div id="saveIndicator" class="hidden mt-2 text-[#008080] text-base">Ответ сохранен</div>
@@ -630,12 +740,12 @@
               </div>
               ${item.think && item.think.trim()
                 ? `<div class="flex items-start gap-2">
-                     <svg class="w-5 h-5 text-[#008080] mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
-                     <div>
-                       <p><strong>Мысль:</strong></p>
-                       <span class="block mt-1 bg-[#121212] p-3 rounded-lg text-sm">${marked.parse(item.think)}</span>
-                     </div>
-                   </div>`
+                    <svg class="w-5 h-5 text-[#008080] mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    <div>
+                      <p><strong>Мысль:</strong></p>
+                      <span class="block mt-1 bg-[#121212] p-3 rounded-lg text-sm">${marked.parse(item.think)}</span>
+                    </div>
+                  </div>`
                 : ''
               }
             </div>
@@ -644,6 +754,7 @@
 
         const toggleEditBtn = container.querySelector(".toggle-edit-btn");
         const cancelEditBtn = container.querySelector(".cancel-edit-btn");
+        const repeatBtn = container.querySelector(".repeat-request-btn");
         const statsText = container.querySelector(".stats-text");
 
         if (toggleEditBtn) {
@@ -679,6 +790,18 @@
             console.log("Cancel edit clicked");
             isEditing = false;
             renderContent();
+          });
+        }
+
+        if (repeatBtn) {
+          repeatBtn.addEventListener("click", () => {
+            promptInput.value = item.request;
+            autoResizeTextarea(promptInput);
+            sections.create.classList.remove("hidden");
+            Object.keys(sections).forEach(key => {
+              if (key !== "create") sections[key].classList.add("hidden");
+            });
+            saveSettings();
           });
         }
 

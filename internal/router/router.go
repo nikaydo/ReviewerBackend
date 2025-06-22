@@ -31,6 +31,7 @@ func (rt *Router) Router() http.Handler {
 		r.Post("/setting/update", rt.Handlers.UpdateSettings)
 
 		r.Get("/review/get", rt.Handlers.ReviewGet)
+		r.Post("/review/favorite/set", rt.Handlers.Favorite)
 		r.Post("/review/delete", rt.Handlers.ReviewDelete)
 		r.Post("/review/add", rt.Handlers.ReviewAdd)
 		r.Post("/review/update", rt.Handlers.ReviewUpdate)

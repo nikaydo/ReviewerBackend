@@ -4,8 +4,6 @@ import (
 	"context"
 	"log"
 	"main/internal/config"
-	"main/internal/models"
-	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -20,7 +18,6 @@ func InitBD(e config.Env) Database {
 	if err != nil {
 		log.Fatalf("Ошибка подключения к базе данных: %v", err)
 	}
-
 	_, err = conn.Exec(context.Background(), `
 		CREATE TABLE IF NOT EXISTS rewusers (
 		id SERIAL PRIMARY KEY,
@@ -32,13 +29,14 @@ func InitBD(e config.Env) Database {
 		log.Fatalf("Ошибка создания таблицы: %v", err)
 	}
 	_, err = conn.Exec(context.Background(), `
-		CREATE TABLE IF NOT EXISTS reviewT (
+		CREATE TABLE IF NOT EXISTS reviewTears (
 			id SERIAL PRIMARY KEY,
 			username TEXT NOT NULL,
 			request TEXT NOT NULL,
 			answer TEXT,
 			date TIMESTAMPTZ,
 			model TEXT,
+			favorite BOOLEAN,
 			think TEXT
 		)
 	`)
@@ -53,117 +51,8 @@ func InitBD(e config.Env) Database {
 			model TEXT
 		)
 	`)
-
 	if err != nil {
 		log.Fatalf("Ошибка создания таблицы: %v", err)
 	}
-
 	return Database{Pg: conn, Env: e}
-}
-
-func (d *Database) Add(user, request, answer, think, model string) error {
-	_, err := d.Pg.Exec(context.Background(), "INSERT INTO reviewT (username, request,answer,think,date,model) VALUES ($1, $2, $3, $4, $5,$6)", user, request, answer, think, time.Now(), model)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *Database) Get(user string) ([]models.UserTab, error) {
-	rows, err := d.Pg.Query(context.Background(), "SELECT id,request,answer,think,date,model FROM reviewT WHERE username = $1", user)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var ls []models.UserTab
-	for rows.Next() {
-		var u models.UserTab
-		if err := rows.Scan(&u.Id, &u.Request, &u.Answer, &u.Think, &u.Date, &u.Model); err != nil {
-			log.Fatalf("Ошибка чтения строки: %v", err)
-		}
-		ls = append(ls, u)
-	}
-	return ls, nil
-}
-
-func (d *Database) GetSettings(username string) (models.UserSettings, error) {
-	rows := d.Pg.QueryRow(context.Background(), "SELECT * from userSetting where username = $1", username)
-	var u models.UserSettings
-	if err := rows.Scan(&u.Id, &u.Username, &u.Request, &u.Model); err != nil {
-		log.Fatalf("Ошибка чтения строки: %v", err)
-	}
-	return u, nil
-}
-func (d *Database) SaveSettings(username, request, model string) error {
-	_, err := d.Pg.Exec(context.Background(), "INSERT INTO userSetting (username, request, model) VALUES ($1, $2, $3)", username, request, model)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *Database) UpdateSettings(username, request, model string) error {
-	_, err := d.Pg.Exec(context.Background(), "UPDATE userSetting SET request = $1, model = $2 WHERE username = $3", request, model, username)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *Database) UpdateReview(username, r, id string) error {
-	_, err := d.Pg.Exec(context.Background(), "UPDATE reviewT SET answer = $1 WHERE username = $2 AND id = $3", r, username, id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *Database) GetOne(user, id string) (models.UserTab, error) {
-	rows := d.Pg.QueryRow(context.Background(), "SELECT id,request,answer,think,date,model FROM reviewT WHERE username = $1 AND id = $2", user, id)
-
-	var u models.UserTab
-	if err := rows.Scan(&u.Id, &u.Request, &u.Answer, &u.Think, &u.Date, &u.Model); err != nil {
-		log.Fatalf("Ошибка чтения строки: %v", err)
-	}
-	return u, nil
-}
-
-func (d *Database) Delete(user, id string) error {
-	_, err := d.Pg.Exec(context.Background(), "DELETE FROM reviewT WHERE username = $1 AND id = $2", user, id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (u *Database) CreateUser(Login, Pass string) (int64, error) {
-	_, err := u.Pg.Exec(context.Background(), `
-		INSERT INTO rewusers (login,password,refresh_token)
-		VALUES ($1,$2,$3);`, Login, Pass, "")
-	if err != nil {
-		return 0, err
-	}
-	return int64(1), nil
-}
-
-func (u *Database) CheckUser(Login, Pass string, pass bool) (models.User, error) {
-	var err error
-	var user models.User
-	if pass {
-		err = u.Pg.QueryRow(context.Background(), `SELECT * FROM rewusers WHERE login = $1 AND password = $2;`, Login, Pass).Scan(&user.Id, &user.Login, &user.Pass, &user.RefreshToken)
-	} else {
-		err = u.Pg.QueryRow(context.Background(), `SELECT * FROM rewusers WHERE login = $1;`, Login).Scan(&user.Id, &user.Login, &user.Pass, &user.RefreshToken)
-	}
-	if err != nil {
-		return user, err
-	}
-	return user, nil
-}
-
-func (u *Database) UpdateUser(login string, t string) error {
-	_, err := u.Pg.Exec(context.Background(), `UPDATE rewusers SET refresh_token = $1 WHERE login = $2;`, t, login)
-	if err != nil {
-		return err
-	}
-	return nil
 }

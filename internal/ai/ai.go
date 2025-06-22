@@ -5,32 +5,33 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"main/internal/models"
 	"net/http"
 	"strings"
 )
-
-type ResponseFromApi struct {
-	Choices []struct {
-		Message struct {
-			Content string `json:"content"`
-		} `json:"message"`
-	} `json:"choices"`
-}
 
 type ResponseFromAI struct {
 	Response string `json:"response"`
 	Think    string `json:"think"`
 }
 
-func Generate(model, api, reqv string) (ResponseFromAI, error) {
+func Generate(model, api, reqv, system, assistant string) (ResponseFromAI, error) {
 	var R ResponseFromAI
 	url := "https://api.mistral.ai/v1/chat/completions"
 	payload := map[string]any{
 		"model": model,
 		"messages": []map[string]string{
 			{
+				"role":    "system",
+				"content": system,
+			},
+			{
 				"role":    "user",
 				"content": reqv,
+			},
+			{
+				"role":    "assistant",
+				"content": assistant,
 			},
 		},
 	}
@@ -55,7 +56,7 @@ func Generate(model, api, reqv string) (ResponseFromAI, error) {
 
 	body, _ := io.ReadAll(resp.Body)
 
-	var response ResponseFromApi
+	var response models.ResponseFromApi
 	if err := json.Unmarshal(body, &response); err != nil {
 		return R, err
 	}
@@ -71,7 +72,7 @@ func Generate(model, api, reqv string) (ResponseFromAI, error) {
 	return R, nil
 }
 
-func GenWithThink(response ResponseFromApi) (ResponseFromAI, error) {
+func GenWithThink(response models.ResponseFromApi) (ResponseFromAI, error) {
 	var R ResponseFromAI
 	if len(response.Choices) == 0 {
 		fmt.Println("Пустой ответ")
@@ -80,6 +81,8 @@ func GenWithThink(response ResponseFromApi) (ResponseFromAI, error) {
 	otvet := strings.Split(response.Choices[0].Message.Content, "</think>")
 	answer := strings.Split(otvet[1], "\\boxed{")
 	R.Response = strings.TrimSpace(answer[0])
+	f := strings.ReplaceAll(R.Response, "—", "-")
+	R.Response = f
 	R.Think = strings.TrimSpace(otvet[0])
 	return R, nil
 }
