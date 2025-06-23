@@ -2,7 +2,6 @@ package handles
 
 import (
 	"encoding/json"
-	"fmt"
 	"main/internal/jwt"
 	"main/internal/models"
 	"net/http"
@@ -49,13 +48,9 @@ func (h *Handlers) SignUp(w http.ResponseWriter, r *http.Request) {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	n, err := h.Pg.CreateUser(user.Login, user.Pass)
+	_, err := h.Pg.CreateUser(user.Login, user.Pass)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
-		return
-	}
-	if n == 0 {
-		writeErrorResponse(w, fmt.Errorf("ошибка"), http.StatusBadRequest)
 		return
 	}
 	j := jwt.JwtTokens{Env: h.Pg.Env}

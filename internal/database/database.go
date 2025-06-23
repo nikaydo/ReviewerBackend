@@ -19,7 +19,7 @@ func InitBD(e config.Env) Database {
 		log.Fatalf("Ошибка подключения к базе данных: %v", err)
 	}
 	_, err = conn.Exec(context.Background(), `
-		CREATE TABLE IF NOT EXISTS rewusers (
+		CREATE TABLE IF NOT EXISTS rewuserss (
 		id SERIAL PRIMARY KEY,
 		login TEXT NOT NULL UNIQUE,
 		password TEXT NOT NULL,
@@ -29,7 +29,7 @@ func InitBD(e config.Env) Database {
 		log.Fatalf("Ошибка создания таблицы: %v", err)
 	}
 	_, err = conn.Exec(context.Background(), `
-		CREATE TABLE IF NOT EXISTS reviewTears (
+		CREATE TABLE IF NOT EXISTS reviewTearss (
 			id SERIAL PRIMARY KEY,
 			username TEXT NOT NULL,
 			request TEXT NOT NULL,
@@ -44,7 +44,7 @@ func InitBD(e config.Env) Database {
 		log.Fatalf("Ошибка создания таблицы: %v", err)
 	}
 	_, err = conn.Exec(context.Background(), `
-		CREATE TABLE IF NOT EXISTS reviewTitles (
+		CREATE TABLE IF NOT EXISTS reviewTitless (
 			idReview INT PRIMARY KEY,
 			title TEXT,
 			request TEXT
@@ -54,7 +54,7 @@ func InitBD(e config.Env) Database {
 		log.Fatalf("Ошибка создания таблицы: %v", err)
 	}
 	_, err = conn.Exec(context.Background(), `
-		CREATE TABLE IF NOT EXISTS userSetting (
+		CREATE TABLE IF NOT EXISTS userSettings (
 			id SERIAL PRIMARY KEY,
 			username TEXT NOT NULL,
 			request TEXT,

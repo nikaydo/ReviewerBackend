@@ -2,16 +2,24 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"main/internal/models"
 )
 
 func (u *Database) CreateUser(Login, Pass string) (int64, error) {
 	_, err := u.Pg.Exec(context.Background(), `
-		INSERT INTO rewusers (login,password,refresh_token)
+		INSERT INTO rewuserss (login,password,refresh_token)
 		VALUES ($1,$2,$3);`, Login, Pass, "")
 	if err != nil {
 		return 0, err
 	}
+	user := models.User{}
+	err = u.Pg.QueryRow(context.Background(), `SELECT * FROM rewuserss WHERE login = $1;`, Login).Scan(&user.Id, &user.Login, &user.Pass, &user.RefreshToken)
+	if err != nil {
+		fmt.Println(err)
+		return 0, err
+	}
+	fmt.Println(user)
 	return int64(1), nil
 }
 
@@ -19,9 +27,9 @@ func (u *Database) CheckUser(Login, Pass string, pass bool) (models.User, error)
 	var err error
 	var user models.User
 	if pass {
-		err = u.Pg.QueryRow(context.Background(), `SELECT * FROM rewusers WHERE login = $1 AND password = $2;`, Login, Pass).Scan(&user.Id, &user.Login, &user.Pass, &user.RefreshToken)
+		err = u.Pg.QueryRow(context.Background(), `SELECT * FROM rewuserss WHERE login = $1 AND password = $2;`, Login, Pass).Scan(&user.Id, &user.Login, &user.Pass, &user.RefreshToken)
 	} else {
-		err = u.Pg.QueryRow(context.Background(), `SELECT * FROM rewusers WHERE login = $1;`, Login).Scan(&user.Id, &user.Login, &user.Pass, &user.RefreshToken)
+		err = u.Pg.QueryRow(context.Background(), `SELECT * FROM rewuserss WHERE login = $1;`, Login).Scan(&user.Id, &user.Login, &user.Pass, &user.RefreshToken)
 	}
 	if err != nil {
 		return user, err
@@ -30,7 +38,7 @@ func (u *Database) CheckUser(Login, Pass string, pass bool) (models.User, error)
 }
 
 func (u *Database) UpdateUser(login string, t string) error {
-	_, err := u.Pg.Exec(context.Background(), `UPDATE rewusers SET refresh_token = $1 WHERE login = $2;`, t, login)
+	_, err := u.Pg.Exec(context.Background(), `UPDATE rewuserss SET refresh_token = $1 WHERE login = $2;`, t, login)
 	if err != nil {
 		return err
 	}
@@ -39,7 +47,7 @@ func (u *Database) UpdateUser(login string, t string) error {
 
 // Settings
 func (d *Database) GetSettings(username string) (models.UserSettings, error) {
-	rows := d.Pg.QueryRow(context.Background(), "SELECT * from userSetting where username = $1", username)
+	rows := d.Pg.QueryRow(context.Background(), "SELECT * from userSettings where username = $1", username)
 	var u models.UserSettings
 	if err := rows.Scan(&u.Id, &u.Username, &u.Request, &u.Model); err != nil {
 		return u, err
@@ -47,7 +55,7 @@ func (d *Database) GetSettings(username string) (models.UserSettings, error) {
 	return u, nil
 }
 func (d *Database) SaveSettings(username, request, model string) error {
-	_, err := d.Pg.Exec(context.Background(), "INSERT INTO userSetting (username, request, model) VALUES ($1, $2, $3)", username, request, model)
+	_, err := d.Pg.Exec(context.Background(), "INSERT INTO userSettings (username, request, model) VALUES ($1, $2, $3)", username, request, model)
 	if err != nil {
 		return err
 	}
@@ -55,7 +63,7 @@ func (d *Database) SaveSettings(username, request, model string) error {
 }
 
 func (d *Database) UpdateSettings(username, request, model string) error {
-	_, err := d.Pg.Exec(context.Background(), "UPDATE userSetting SET request = $1, model = $2 WHERE username = $3", request, model, username)
+	_, err := d.Pg.Exec(context.Background(), "UPDATE userSettings SET request = $1, model = $2 WHERE username = $3", request, model, username)
 	if err != nil {
 		return err
 	}

@@ -9,7 +9,7 @@ import (
 func (d *Database) ReviewAdd(user, request, answer, think, model string) error {
 	_, err := d.Pg.Exec(context.Background(), `
 	INSERT INTO 
-		reviewTears 
+		reviewTearss 
 		(username, request,answer,think,date,model,favorite) 
 		VALUES 
 		($1, $2, $3, $4, $5, $6, $7)
@@ -25,7 +25,7 @@ func (d *Database) ReviewFavorite(username, favorite, id string) error {
 	if favorite == "true" {
 		f = true
 	}
-	_, err := d.Pg.Exec(context.Background(), "UPDATE reviewTears SET favorite = $1 WHERE username = $2 AND id = $3", f, username, id)
+	_, err := d.Pg.Exec(context.Background(), "UPDATE reviewTearss SET favorite = $1 WHERE username = $2 AND id = $3", f, username, id)
 	if err != nil {
 		return err
 	}
@@ -52,8 +52,8 @@ func (d *Database) ReviewGet(user string) ([]models.UserTab, error) {
 			rt.favorite,
 			rtitle.title,
 			rtitle.request AS title_request
-		FROM reviewTears rt
-		LEFT JOIN reviewTitles rtitle ON rtitle.idReview = rt.id
+		FROM reviewTearss rt
+		LEFT JOIN reviewTitless rtitle ON rtitle.idReview = rt.id
 		WHERE rt.username = $1;
 	`, user)
 	if err != nil {
@@ -90,7 +90,7 @@ func (d *Database) ReviewGet(user string) ([]models.UserTab, error) {
 }
 
 func (d *Database) UpdateReview(username, r, id string) error {
-	_, err := d.Pg.Exec(context.Background(), "UPDATE reviewTears SET answer = $1 WHERE username = $2 AND id = $3", r, username, id)
+	_, err := d.Pg.Exec(context.Background(), "UPDATE reviewTearss SET answer = $1 WHERE username = $2 AND id = $3", r, username, id)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func (d *Database) UpdateReview(username, r, id string) error {
 }
 
 func (d *Database) ReviewGetOne(user, id string) (models.UserTab, error) {
-	rows := d.Pg.QueryRow(context.Background(), "SELECT id,request,answer,think,date,model,favorite FROM reviewTears WHERE username = $1 AND id = $2", user, id)
+	rows := d.Pg.QueryRow(context.Background(), "SELECT id,request,answer,think,date,model,favorite FROM reviewTearss WHERE username = $1 AND id = $2", user, id)
 	var u models.UserTab
 	if err := rows.Scan(&u.Id, &u.Request, &u.Answer, &u.Think, &u.Date, &u.Model, &u.Favorite); err != nil {
 		return u, err
@@ -107,7 +107,7 @@ func (d *Database) ReviewGetOne(user, id string) (models.UserTab, error) {
 }
 
 func (d *Database) ReviewDelete(user, id string) error {
-	_, err := d.Pg.Exec(context.Background(), "DELETE FROM reviewTears WHERE username = $1 AND id = $2", user, id)
+	_, err := d.Pg.Exec(context.Background(), "DELETE FROM reviewTearss WHERE username = $1 AND id = $2", user, id)
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (d *Database) ReviewDelete(user, id string) error {
 
 func (d *Database) ReviewTitleAdd(idReview, title, request string) error {
 	_, err := d.Pg.Exec(context.Background(), `
-		INSERT INTO reviewTitles (idReview, title, request)
+		INSERT INTO reviewTitless (idReview, title, request)
 		VALUES ($1, $2, $3)
 		ON CONFLICT (idReview) DO UPDATE
 		SET title = EXCLUDED.title,
@@ -126,7 +126,7 @@ func (d *Database) ReviewTitleAdd(idReview, title, request string) error {
 }
 
 func (d *Database) ReviewTitleUpdate(title, id string) error {
-	_, err := d.Pg.Exec(context.Background(), "UPDATE reviewTitles SET title = $1 WHERE idReview = $2", title, id)
+	_, err := d.Pg.Exec(context.Background(), "UPDATE reviewTitless SET title = $1 WHERE idReview = $2", title, id)
 	if err != nil {
 		return err
 	}

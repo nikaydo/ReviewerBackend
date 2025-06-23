@@ -41,9 +41,15 @@ func (rt *Router) Router() http.Handler {
 			r.Post("/update", rt.Handlers.ReviewUpdate)
 			r.Post("/favorite/set", rt.Handlers.Favorite)
 		})
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "./web/user.html")
+		})
 	})
 	r.Post("/signin", rt.Handlers.SignIn)
 	r.Post("/signup", rt.Handlers.SignUp)
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./web/index.html")
+	})
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("./web/static"))))
 	return r
 }

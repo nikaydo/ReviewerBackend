@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Review</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0A2463',
+            accent: '#2DD4BF',
+            accentLight: '#06B6D4',
+            soft: 'rgba(255, 255, 255, 0.1)',
+          },
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0A2463, #38BDF8);
+      background-attachment: fixed;
+      color: white;
+      overflow: hidden;
+      animation: waterFlow 10s ease-in-out infinite;
+    }
+    @keyframes waterFlow {
+      0% { background-position: 0% 0%; }
+      50% { background-position: 100% 100%; }
+      100% { background-position: 0% 0%; }
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #0A2463, #38BDF8);
+      background-size: 200% 200%;
+      animation: waterFlow 10s ease-in-out infinite;
+      z-index: -2;
+    }
+    .canvas-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100%;
+    }
+    .transparent-panel {
+      background: transparent;
+      border: none;
+    }
+    .form-input {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 10px 0;
+      transition: border-bottom-color 0.3s ease, transform 0.3s ease;
+      position: relative;
+      caret-color: #2DD4BF;
+    }
+    .form-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .form-input:focus::placeholder {
+      transform: translateY(-15px);
+      opacity: 0;
+    }
+    .form-input:focus {
+      outline: none;
+      border-bottom-color: #2DD4BF;
+      transform: scale(1.01);
+    }
+    .form-input:-webkit-autofill,
+    .form-input:-webkit-autofill:hover,
+    .form-input:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px transparent inset;
+      -webkit-text-fill-color: white;
+      background: transparent;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+      transition: border-bottom-color 0.3s ease;
+    }
+    .form-input:-webkit-autofill:focus {
+      border-bottom-color: #2DD4BF;
+    }
+    .tab {
+      transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
+      border-radius: 6px;
+      padding: 8px 16px;
+      background: linear-gradient(90deg, transparent, transparent);
+    }
+    .tab.active {
+      background: linear-gradient(90deg, #2DD4BF, #06B6D4);
+      color: white;
+      transform: scale(1.05);
+    }
+    .tab:hover {
+      transform: scale(1.03);
+    }
+    .btn-transparent {
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      background: linear-gradient(90deg, #2DD4BF, #06B6D4);
+      transition: border-color 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
+      border-radius: 8px;
+    }
+    .btn-transparent:hover {
+      border-color: #06B6D4;
+      background: linear-gradient(90deg, #06B6D4, #2DD4BF);
+      transform: translateY(-2px);
+    }
+    .message {
+      transition: opacity 0.5s ease;
+      opacity: 0;
+      display: none;
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .message.show {
+      opacity: 1;
+      display: block;
+    }
+    .hero-content, .auth-content {
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .hidden-content {
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+    }
+    .visible-content {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+  <!-- Particle Background -->
+  <canvas id="particleCanvas" class="canvas-bg"></canvas>
+
+  <!-- Navbar -->
+  <nav class="bg-transparent text-white py-4 px-6 flex justify-between items-center">
+    <div class="text-xl font-bold tracking-tight">AI Review</div>
+  </nav>
+
+  <!-- Hero Section -->
+  <main class="flex-grow flex items-center justify-center text-center px-4">
+    <div class="max-w-md w-full relative">
+      <!-- Hero Content -->
+      <div id="heroContent" class="hero-content visible-content">
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Отзывы с ИИ</h1>
+        <p class="text-lg mb-8 opacity-90">Создавай отзывы мгновенно с помощью передового искусственного интеллекта.</p>
+        <button onclick="toggleAuth()" class="text-white font-semibold px-6 py-2 btn-transparent">Попробовать</button>
+      </div>
+      <!-- Auth Content -->
+      <div id="authContent" class="auth-content hidden-content absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full">
+        <div class="transparent-panel p-6 max-w-sm mx-auto">
+          <!-- Tab Navigation -->
+          <div class="flex mb-6 justify-center gap-4">
+            <button id="loginTab" class="tab text-sm font-medium text-white active">Вход</button>
+            <button id="registerTab" class="tab text-sm font-medium text-white">Регистрация</button>
+          </div>
+          <!-- Login Form -->
+          <div id="loginForm" class="auth-form">
+            <form id="loginFormElement">
+              <div class="mb-6">
+                <input type="text" id="loginEmail" placeholder="Логин" class="form-input w-full" required>
+              </div>
+              <div class="mb-6">
+                <input type="password" id="loginPassword" placeholder="Пароль" class="form-input w-full" required>
+              </div>
+              <button type="submit" id="loginBtn" class="w-full text-white font-semibold py-2 btn-transparent">Войти</button>
+              <div id="loginStatusMessage" class="message text-yellow-300"></div>
+              <div id="loginSuccessMessage" class="message text-green-300"></div>
+              <div id="loginErrorMessage" class="message text-red-300"></div>
+            </form>
+          </div>
+          <!-- Register Form -->
+          <div id="registerForm" class="auth-form hidden">
+            <form id="registerFormElement">
+              <div class="mb-6">
+                <input type="text" id="registerEmail" placeholder="Логин" class="form-input w-full" required>
+              </div>
+              <div class="mb-6">
+                <input type="password" id="registerPassword" placeholder="Пароль" class="form-input w-full" required>
+              </div>
+              <button type="submit" id="registerBtn" class="w-full text-white font-semibold py-2 btn-transparent">Создать</button>
+              <div id="registerStatusMessage" class="message text-yellow-300"></div>
+              <div id="registerSuccessMessage" class="message text-green-300"></div>
+              <div id="registerErrorMessage" class="message text-red-300"></div>
+            </form>
+          </div>
+          <button onclick="toggleAuth()" class="mt-6 text-sm text-white opacity-80 hover:opacity-100 w-full text-center btn-transparent py-1">Назад</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Particle Animation
+    const canvas = document.getElementById('particleCanvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let particles = [];
+    let particleCount = 50;
+    let animationTimeout = null;
+
+    class Particle {
+      constructor(speedMultiplier = 1, isInputParticle = false, startX, startY) {
+        this.x = isInputParticle ? startX : Math.random() * canvas.width;
+        this.y = isInputParticle ? startY : Math.random() * canvas.height;
+        this.size = isInputParticle ? Math.random() * 1 + 0.5 : Math.random() * 2 + 1;
+        this.speedX = (Math.random() * 0.7 - 0.35) * speedMultiplier * (isInputParticle ? 3 : 1.5);
+        this.speedY = (Math.random() * 0.7 - 0.35) * speedMultiplier * (isInputParticle ? 3 : 1.5);
+        this.opacity = isInputParticle ? 0.8 : 0.4;
+        this.life = isInputParticle ? 25 : Infinity;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.life !== Infinity) {
+          this.opacity -= 0.03;
+          this.life--;
+          if (this.life <= 0) {
+            const index = particles.indexOf(this);
+            if (index > -1) particles.splice(index, 1);
+          }
+        }
+        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+      }
+      draw() {
+        ctx.fillStyle = `rgba(56, 189, 248, ${this.opacity})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function initParticles(count, speedMultiplier = 1) {
+      particles = particles.filter(p => p.life !== Infinity);
+      for (let i = 0; i < count; i++) {
+        particles.push(new Particle(speedMultiplier));
+      }
+    }
+
+    initParticles(particleCount);
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    // Auth Toggle with Particle Effect
+    function toggleAuth() {
+      const heroContent = document.getElementById('heroContent');
+      const authContent = document.getElementById('authContent');
+      heroContent.classList.toggle('hidden-content');
+      heroContent.classList.toggle('visible-content');
+      authContent.classList.toggle('hidden-content');
+      authContent.classList.toggle('visible-content');
+
+      if (!heroContent.classList.contains('visible-content')) {
+        particleCount = 100;
+        initParticles(particleCount, 2);
+        clearTimeout(animationTimeout);
+        animationTimeout = setTimeout(() => {
+          particleCount = 50;
+          initParticles(particleCount, 1);
+        }, 2000);
+      }
+    }
+
+    function switchForm(formType) {
+      const loginForm = document.getElementById('loginForm');
+      const registerForm = document.getElementById('registerForm');
+      const loginTab = document.getElementById('loginTab');
+      const registerTab = document.getElementById('registerTab');
+
+      loginForm.classList.toggle('hidden', formType !== 'login');
+      registerForm.classList.toggle('hidden', formType !== 'register');
+      loginTab.classList.toggle('active', formType === 'login');
+      registerTab.classList.toggle('active', formType === 'register');
+    }
+
+    // Input Particle Effect
+    function addInputParticleEffect(input) {
+      input.addEventListener('input', (e) => {
+        const rect = e.target.getBoundingClientRect();
+        const cursorX = rect.left + rect.width / 2;
+        const cursorY = rect.top + rect.height / 2;
+        for (let i = 0; i < 2; i++) {
+          particles.push(new Particle(1, true, cursorX, cursorY));
+        }
+      });
+    }
+
+    document.getElementById('loginEmail').addEventListener('input', (e) => {
+      const rect = e.target.getBoundingClientRect();
+      const cursorX = rect.left + rect.width / 2;
+      const cursorY = rect.top + rect.height / 2;
+      for (let i = 0; i < 2; i++) {
+        particles.push(new Particle(1, true, cursorX, cursorY));
+      }
+    });
+    document.getElementById('loginPassword').addEventListener('input', (e) => {
+      const rect = e.target.getBoundingClientRect();
+      const cursorX = rect.left + rect.width / 2;
+      const cursorY = rect.top + rect.height / 2;
+      for (let i = 0; i < 2; i++) {
+        particles.push(new Particle(1, true, cursorX, cursorY));
+      }
+    });
+    document.getElementById('registerEmail').addEventListener('input', (e) => {
+      const rect = e.target.getBoundingClientRect();
+      const cursorX = rect.left + rect.width / 2;
+      const cursorY = rect.top + rect.height / 2;
+      for (let i = 0; i < 2; i++) {
+        particles.push(new Particle(1, true, cursorX, cursorY));
+      }
+    });
+    document.getElementById('registerPassword').addEventListener('input', (e) => {
+      const rect = e.target.getBoundingClientRect();
+      const cursorX = rect.left + rect.width / 2;
+      const cursorY = rect.top + rect.height / 2;
+      for (let i = 0; i < 2; i++) {
+        particles.push(new Particle(1, true, cursorX, cursorY));
+      }
+    });
+
+    // Authentication Functionality
+    const API_BASE_URL = 'http://localhost:8080';
+
+    function showMessage(element, message) {
+      element.textContent = message;
+      element.classList.add('show');
+      setTimeout(() => element.classList.remove('show'), 3000);
+    }
+
+    function clearMessages(formType) {
+      const statusMessage = document.getElementById(`${formType}StatusMessage`);
+      const successMessage = document.getElementById(`${formType}SuccessMessage`);
+      const errorMessage = document.getElementById(`${formType}ErrorMessage`);
+      statusMessage.classList.remove('show');
+      successMessage.classList.remove('show');
+      errorMessage.classList.remove('show');
+    }
+
+    async function sendAuthRequest(url, formType) {
+      const loginInput = formType === 'login' ? document.getElementById('loginEmail') : document.getElementById('registerEmail');
+      const passwordInput = formType === 'login' ? document.getElementById('loginPassword') : document.getElementById('registerPassword');
+      const statusMessage = document.getElementById(`${formType}StatusMessage`);
+      const successMessage = document.getElementById(`${formType}SuccessMessage`);
+      const errorMessage = document.getElementById(`${formType}ErrorMessage`);
+
+      const login = loginInput.value.trim();
+      const pass = passwordInput.value.trim();
+
+      if (!login || !pass) {
+        showMessage(errorMessage, 'Пожалуйста, заполните все поля.');
+        return;
+      }
+
+      clearMessages(formType);
+      showMessage(statusMessage, formType === 'login' ? 'Идет вход...' : 'Идет регистрация...');
+
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ login, pass })
+        });
+
+        const isSignup = url.includes('/signup');
+
+        if (response.ok) {
+          if (isSignup) {
+            await fetch(`${API_BASE_URL}/user/setting/save`, {
+              method: 'GET'
+            });
+          }
+          clearMessages(formType);
+          showMessage(successMessage, isSignup ? 'Успешная регистрация!' : 'Успешный вход!');
+          window.location.href = 'user';
+        } else {
+          const data = await response.json();
+          clearMessages(formType);
+          showMessage(errorMessage, data?.error || 'Ошибка авторизации');
+        }
+      } catch (error) {
+        clearMessages(formType);
+        showMessage(errorMessage, 'Неверный логин или пароль');
+        console.error(error);
+      }
+    }
+
+    document.getElementById('loginFormElement').addEventListener('submit', (e) => {
+      e.preventDefault();
+      sendAuthRequest(`${API_BASE_URL}/signin`, 'login');
+    });
+
+    document.getElementById('registerFormElement').addEventListener('submit', (e) => {
+      e.preventDefault();
+      sendAuthRequest(`${API_BASE_URL}/signup`, 'register');
+    });
+
+    document.getElementById('loginTab').addEventListener('click', () => switchForm('login'));
+    document.getElementById('registerTab').addEventListener('click', () => switchForm('register'));
+  </script>
+</body>
+</html>

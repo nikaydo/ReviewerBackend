@@ -26,6 +26,7 @@ func writeJSONResponse(w http.ResponseWriter, data any, status int) {
 
 func writeErrorResponse(w http.ResponseWriter, data error, status int) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	log.Println(data)
 	w.WriteHeader(status)
 	_, err := w.Write([]byte(data.Error()))
 	if err != nil {

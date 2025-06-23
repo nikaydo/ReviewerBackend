@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Профиль пользователя</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai-sublime.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+  <style>
+    body {
+      background-color: #121212;
+      color: #F5F5F5;
+      font-family: 'Inter', sans-serif;
+    }
+    /* Контейнер для кодовых блоков */
+    .code-container {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+    /* Заголовок кодового блока */
+    .code-header {
+      background-color: #2A2A2A;
+      padding: 0.5rem 1rem;
+      border-top-left-radius: 0.75rem;
+      border-top-right-radius: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    
+    }
+    /* Название языка программирования */
+    .code-language {
+      color: #87bfc5;
+      font-weight: 600;
+    }
+    /* Контейнер для кнопок действий */
+    .code-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+    /* Стили кнопок "Свернуть" и "Копировать" */
+    .code-action-btn {
+      background: #2A2A2A;
+ 
+      color: #00E5FF;
+      cursor: pointer;
+      padding: 0.25rem;
+      border-radius: 0.25rem;
+      transition: all 0.3s ease;
+    }
+    .code-action-btn:hover {
+      background: #008080;
+      color: #E0E0E0;
+      transform: translateY(-1px);
+    }
+    /* Обновление стилей для pre, чтобы убрать верхние скругления */
+    .prose pre {
+      margin: 0;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      background-color: #1E1E1E;
+      padding: 1rem;
+      overflow-x: auto;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    /* Обновление стилей подсветки синтаксиса */
+    .hljs {
+      color: #D4D4D4;
+      background-color: #1E1E1E;
+    }
+    .prose pre {
+      background-color: #1E1E1E;
+      color: #E0E0E0;
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      overflow-x: auto;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .prose code {
+      background-color: #1E1E1E;
+      color: #33aab9;
+      padding: 0.3rem 0.6rem;
+      border-radius: 0.3rem;
+      font-size: 0.95rem;
+    }
+    .prose pre code {
+      background-color: transparent;
+      padding: 0;
+      color: inherit;
+    }
+    .hljs {
+      background-color: #1E1E1E;
+      color: #E0E0E0;
+    }
+    .hljs-keyword { color: #398a8d; }
+    .hljs-string { color: #808080; }
+    .hljs-comment { color: #6272A4; }
+    .prose {
+      color: #F5F5F5;
+      font-size: 1.1rem;
+      line-height: 1.0;
+      padding: 1rem;
+      background-color: #2A2A2A;
+      border-radius: 0.75rem;
+      min-height: 250px;
+      width: 100%;
+      max-width: 100%;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      transition: all 0.3s ease;
+    }
+    /* Изменение цвета жирного текста в отзывах и ответах на вопросы */
+    .prose strong {
+      color: #16737e;
+    }
+    .prose table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1rem;
+    }
+    .prose th, .prose td {
+      border: 1px solid #3A3A3A;
+      padding: 0.75rem;
+      text-align: left;
+    }
+    .prose th {
+      background-color: #2A2A2A;
+      font-weight: 600;
+    }
+    .prose td {
+      background-color: #1E1E1E;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    .prose a {
+      color: #388caf;
+      text-decoration: underline;
+      transition: color 0.3s ease;
+    }
+    .prose a:hover {
+      color: #3b92a1;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1E1E1E;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #008080;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #006666;
+    }
+    .sidebar-item:hover {
+      background-color: #188181;
+      color: #E0E0E0;
+    }
+    .sidebar-item {
+      transition: all 0.3s ease;
+      border-radius: 0.5rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      opacity: 0.7;
+    }
+    /* Выделение активного отзыва в боковом меню */
+    .sidebar-item.active {
+      background-color: #008080;
+      color: #E0E0E0;
+      opacity: 1;
+      font-weight: 600;
+    }
+    textarea, select, input[type="text"] {
+      background-color: #1E1E1E;
+      color: #E0E0E0;
+      border: none;
+      border-radius: 1rem;
+      transition: all 0.3s ease;
+    }
+    textarea::placeholder, input[type="text"]::placeholder {
+      color: #E0E0E0;
+      opacity: 0.5;
+    }
+    textarea:focus, select:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: #008080;
+      box-shadow: 0 0 0 2px rgba(0, 128, 128, 0.3);
+    }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    .loader {
+      border: 2px solid #1E1E1E;
+      border-top: 2px solid #008080;
+      border-radius: 50%;
+      width: 1.5rem;
+      height: 1.5rem;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    #selected-review .response-text {
+      width: 100%;
+      max-width: 100%;
+    }
+    .response-editor, .title-output-editor {
+      max-width: 100%;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      transition: all 0.3s ease;
+    }
+    .response-container, .title-output-container {
+      width: 100%;
+      max-width: 100%;
+      transition: all 0.3s ease;
+    }
+    .request-text {
+      overflow-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+    }
+    .title-request-input {
+      width: 100%;
+      min-height: 60px;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      resize: vertical;
+      background-color: #1E1E1E;
+      color: #E0E0E0;
+      transition: all 0.3s ease;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .modal.show {
+      display: flex;
+      opacity: 1;
+    }
+    .modal-content {
+      background-color: #1E1E1E;
+      padding: 2rem;
+      border-radius: 0.75rem;
+      max-width: 450px;
+      width: 90%;
+      text-align: center;
+      transform: scale(0.95);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .modal.show .modal-content {
+      transform: scale(1);
+      opacity: 1;
+    }
+    .modal-button {
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.5rem;
+      margin: 0.5rem;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    .modal-button:hover {
+      transform: translateY(-2px);
+    }
+    .card {
+      background-color: #1E1E1E;
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+      width: auto;
+      max-width: 100%;
+      transition: all 0.3s ease;
+    }
+    .btn-primary {
+      background-color: #008080;
+      color: #E0E0E0;
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      background-color: #006666;
+      transform: translateY(-2px);
+    }
+    .btn-primary:disabled {
+      background-color: #003333;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .btn-secondary {
+      background-color: #2A2A2A;
+      color: #E0E0E0;
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+    }
+    .btn-secondary:hover {
+      background-color: #3A3A3A;
+      transform: translateY(-2px);
+    }
+    .btn-toggle {
+      background-color: #2A2A2A;
+      color: #E0E0E0;
+      border-radius: 0.75rem;
+      transition: all 0.3s ease;
+    }
+    .btn-toggle.active {
+      background-color: #008080;
+    }
+    .btn-toggle:hover {
+      background-color: #006666;
+      transform: translateY(-2px);
+    }
+    .section-transition {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .section-transition.hidden {
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    .sidebar {
+      width: 16rem;
+      z-index: 10;
+      background-color: #121212;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    .sidebar::after {
+      content: '';
+      position: absolute;
+      top: 1rem;
+      bottom: 1rem;
+      right: 0;
+      width: 1px;
+      background-color: #2A2A2A;
+    }
+    @keyframes stat-update {
+      0% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .stat-number {
+      animation: stat-update 0.3s ease;
+    }
+    .input-card textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      resize: vertical;
+      transition: all 0.3s ease;
+    }
+    .main-content {
+      flex: 1;
+      padding: 2rem;
+      margin-left: 16rem;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+    #create-section, #reviews-section, #textometer-section {
+      width: 100%;
+      padding: 0;
+      box-sizing: border-box;
+      height: auto;
+    }
+    #create-section .card {
+      width: 100%;
+      max-width: 48rem;
+    }
+    #promptInput {
+      width: 100%;
+      min-height: 60px;
+      padding: 1rem;
+      border-radius: 0.75rem;
+      resize: vertical;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+    .section-above-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 60vh;
+      margin-top: 24vh;
+    }
+    /* Стили для уведомлений */
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #2A2A2A;
+      color: #E0E0E0;
+      padding: 12px 20px;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      opacity: all 0;
+      transform: translateY(20px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      max-width: 300px;
+    }
+    .notification.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .notification.error {
+      background-color: #00a0ac;
+    }
+.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6 {
+  color: #87bfc5 !important;
+}
+.prose th {
+  color: #87bfc5 !important;
+  font-weight: 700;
+  background-color: #272b2a;
+}
+  </style>
+</head>
+<body class="flex min-h-screen text-gray-200 antialiased font-sans">
+  <!-- Модальное окно -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <h3 class="text-xl font-semibold text-[#E0E0E0] mb-4">Подтверждение удаления</h3>
+      <p class="text-sm text-[#E0E0E0] mb-6">Вы уверены, что хотите удалить этот запрос?</p>
+      <div class="flex justify-center gap-4">
+        <button id="confirmDeleteBtn" class="modal-button btn-primary">Удалить</button>
+        <button id="cancelDeleteBtn" class="modal-button btn-secondary">Отмена</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Левое меню -->
+  <aside id="sidebar" class="w-64 bg-[#121212] shadow-md p-4 fixed h-full overflow-y-auto sidebar">
+    <div class="sidebar-content">
+      <ul class="space-y-2 mt-4">
+        <li>
+          <button class="menu-item w-full text-left py-2 px-3 sidebar-item text-[#E0E0E0] font-medium text-sm flex items-center gap-2" data-section="create">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            Написать отзыв
+          </button>
+        </li>
+        <li>
+          <button class="menu-item w-full text-left py-2 px-3 sidebar-item text-[#E0E0E0] font-medium text-sm flex items-center gap-2" data-section="textometer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6m6 6v-8m-6 8V9m6 10V7m-9 12V5"></path></svg>
+            Текстомер
+          </button>
+        </li>
+      </ul>
+      <hr class="my-3 border-[#2A2A2A]" />
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-md font-semibold text-[#E0E0E0]">Ваши запросы</h3>
+        <button id="refreshBtn" class="text-[#E0E0E0] hover:bg-[#8B0000] p-2 rounded-full transition-colors duration-300" title="Обновить запросы">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-color="#008080" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+        </button>
+      </div>
+      <ul id="review-list" class="space-y-1"></ul>
+      <hr class="my-3 border-[#2A2A2A]" />
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-md font-semibold text-[#E0E0E0]"">Выбрнные вами</h3>
+      </div>
+      <ul id="favorite-list" class="space-y-1"></ul>
+    </div>
+  </aside>
+
+  <!-- Основной контент -->
+  <main id="main-content" class="main-content">
+    <!-- Поле ввода запроса -->
+    <section id="create-section" class="section-transition section-above-center">
+      <div class="card p-3 w-full max-w-lg">
+        <textarea id="promptInput" class="w-full px-3 py-2 rounded-md text-sm text-[#E0E0E0] bg-[#1E1E1E]" placeholder="Введите ваш запрос..." rows="1"></textarea>
+        <div class="flex justify-between gap-2 mt-2 flex-wrap">
+          <select id="modelSelect" class="p-3 rounded-lg text-base flex-1 max-w-xs">
+            <option value="mistral-medium-2505">Mistral Medium 2505</option>
+            <option value="ministral-8b-2410">Ministral 8B 2410</option>
+            <option value="ministral-3b-2410">Ministral 3B 2410</option>
+          </select>
+          <button id="thinkToggleBtn" class="btn-toggle px-3 py-1 rounded-md text-sm flex items-center gap-1" data-think="false">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707-.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707M12 14a5 5 0 01-5-5h10a5 5 0 01-5 5z"></path></svg>
+            Мысль
+          </button>
+          <button id="generateReviewBtn" class="btn-primary px-3 py-2 rounded-md text-sm flex items-center gap-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            Сгенерировать
+          </button>
+        </div>
+      </div>
+      <div id="generatingIndicator" class="hidden mt-2 flex items-center gap-2">
+        <div class="loader"></div>
+        <p class="text-sm text-[#008080]">Генерация ответа...</p>
+      </div>
+    </section>
+
+    <!-- Запросы -->
+    <section id="reviews-section" class="section-transition hidden">
+      <div id="selected-review" class="card p-6"></div>
+    </section>
+
+    <!-- Текстомер -->
+    <section id="textometer-section" class="section-transition hidden">
+      <h2 class="text-3xl font-bold text-[#E0E0E0] mb-6">Текстомер</h2>
+      <div class="card p-6 w-full">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="text-center">
+            <p id="stats-chars-spaces" class="stat-number text-4xl font-bold text-[#008080]">0</p>
+            <p class="text-sm text-[#E0E0E0] opacity-60">Символы (с пробелами)</p>
+          </div>
+          <div class="text-center">
+            <p id="stats-chars-no-spaces" class="stat-number text-4xl font-bold text-[#008080]">0</p>
+            <p class="text-sm text-[#E0E0E0] opacity-60">Символы (без пробелов)</p>
+          </div>
+          <div class="text-center">
+            <p id="stats-words" class="stat-number text-4xl font-bold text-[#008080]">0</p>
+            <p class="text-sm text-[#E0E0E0] opacity-60">Слова</p>
+          </div>
+          <div class="text-center">
+            <p id="stats-sentences" class="stat-number text-4xl font-bold text-[#008080]">0</p>
+            <p class="text-sm text-[#E0E0E0] opacity-60">Предложения</p>
+          </div>
+        </div>
+        <textarea id="statsInput" class="w-full p-4 rounded-lg resize-y min-h-[200px] text-base" placeholder="Введите текст для анализа..."></textarea>
+      </div>
+    </section>
+  </main>
+  
+<script>
+    const API_BASE_URL = 'http://localhost:8080';
+
+    // Custom alert function for corner notifications
+    function showNotification(message, isError = false) {
+      const notification = document.createElement('div');
+      notification.className = `notification ${isError ? 'error' : ''}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.classList.add('show'), 100);
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 400);
+      }, 3000);
+    }
+
+    // Override alert
+    window.alert = showNotification;
+
+    // Определяем функцию highlight отдельно
+    const highlightFunc = function(code, lang) {
+      const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+      return hljs.highlight(code, { language }).value;
+    };
+
+    // Настраиваем рендер
+    const renderer = new marked.Renderer();
+    renderer.code = function(code, infostring, escaped) {
+      const lang = (infostring || '').match(/\S*/)[0];
+      const highlightedCode = highlightFunc(code, lang);
+      const codeHtml = `<pre><code class="${marked.options.langPrefix}${lang}">${highlightedCode}</code></pre>`;
+      return `
+        <div class="code-container">
+          <div class="code-header">
+            <span class="code-language">${lang || 'Code'}</span>
+            <div class="code-actions">
+              <button class="code-action-btn toggle-code" title="Свернуть">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                </svg>
+              </button>
+              <button class="code-action-btn copy-code" title="Копировать">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2M8 5V3a2 2 0 012-2h4a2 2 0 012 2v2M8 5h8"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          ${codeHtml}
+        </div>
+      `;
+    };
+
+    // Устанавливаем опции marked один раз
+    marked.setOptions({
+      highlight: highlightFunc,
+      langPrefix: 'hljs language-',
+      breaks: true,
+      gfm: true,
+      tables: true,
+      renderer: renderer
+    });
+
+    const sections = {
+      create: document.getElementById("create-section"),
+      reviews: document.getElementById("reviews-section"),
+      textometer: document.getElementById("textometer-section")
+    };
+
+    let reviewsData = [];
+    let currentReviewIndex = -1;
+    const promptInput = document.getElementById("promptInput");
+    const modelSelect = document.getElementById("modelSelect");
+    const thinkToggleBtn = document.getElementById("thinkToggleBtn");
+    const generateReviewBtn = document.getElementById("generateReviewBtn");
+    let saveTimeout;
+
+    // Auto-resize textarea
+    function autoResizeTextarea(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+
+    promptInput.addEventListener('input', () => autoResizeTextarea(promptInput));
+
+    // Toggle Think Mode
+    thinkToggleBtn.addEventListener('click', () => {
+      const isActive = thinkToggleBtn.dataset.think === 'true';
+      thinkToggleBtn.dataset.think = !isActive;
+      thinkToggleBtn.classList.toggle('active', !isActive);
+      debounceSaveSettings();
+    });
+
+    // Function to show modal
+    function showModal({ onConfirm, onCancel }) {
+      const modal = document.getElementById("confirmModal");
+      const confirmBtn = document.getElementById("confirmDeleteBtn");
+      const cancelBtn = document.getElementById("cancelDeleteBtn");
+
+      const newConfirmBtn = confirmBtn.cloneNode(true);
+      const newCancelBtn = cancelBtn.cloneNode(true);
+      confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+      cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+      modal.classList.add("show");
+
+      newConfirmBtn.addEventListener("click", () => {
+        onConfirm();
+        modal.classList.remove("show");
+      });
+
+      newCancelBtn.addEventListener("click", () => {
+        onCancel();
+        modal.classList.remove("show");
+      });
+
+      document.addEventListener("keydown", function handler(e) {
+        if (e.key === "Escape" && modal.classList.contains("show")) {
+          modal.classList.remove("show");
+          document.removeEventListener("keydown", handler);
+        }
+      });
+    }
+
+    // Function to save settings
+    async function saveSettings() {
+      const request = promptInput.value.trim();
+      const model = modelSelect.value;
+      const think = thinkToggleBtn.dataset.think;
+      try {
+        const res = await fetch(`${API_BASE_URL}/user/setting/update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ request, model, think }),
+          credentials: 'include'
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Ошибка при обновлении настроек");
+        }
+      } catch (err) {
+        console.error("Update Settings Error:", err);
+      }
+    }
+
+    // Debounce save settings
+    function debounceSaveSettings() {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(saveSettings, 500);
+    }
+
+    // Function to load settings
+    async function loadSettings() {
+      try {
+        const res = await fetch(`${API_BASE_URL}/user/setting/get`, {
+          headers: { "Content-Type": "application/json" },
+          credentials: 'include'
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Ошибка при загрузке настроек");
+        }
+        const data = await res.json();
+        if (data && typeof data === 'object') {
+          if (data.request) promptInput.value = data.request;
+          if (data.model) modelSelect.value = data.model;
+          if (data.think) {
+            thinkToggleBtn.dataset.think = data.think;
+            if (data.think === 'true') thinkToggleBtn.classList.add('active');
+          }
+          autoResizeTextarea(promptInput);
+        }
+      } catch (err) {
+        console.error("Load Settings Error:", err);
+      }
+    }
+
+    // Restore interactivity for create-section
+    function restoreCreateSection() {
+      promptInput.disabled = false;
+      modelSelect.disabled = false;
+      thinkToggleBtn.disabled = false;
+      generateReviewBtn.disabled = false;
+      generateReviewBtn.classList.remove("opacity-50", "cursor-not-allowed");
+      promptInput.style.pointerEvents = 'auto';
+      modelSelect.style.pointerEvents = 'auto';
+      thinkToggleBtn.style.pointerEvents = 'auto';
+      generateReviewBtn.style.pointerEvents = 'auto';
+    }
+
+    // Save settings on input change (debounced)
+    promptInput.addEventListener('input', debounceSaveSettings);
+
+    // Save settings on tab switch
+    document.querySelectorAll('.menu-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        Object.values(sections).forEach(sec => {
+          sec.classList.add("hidden");
+        });
+        const targetSection = sections[btn.dataset.section];
+        targetSection.classList.remove("hidden");
+        if (btn.dataset.section === "create") {
+          restoreCreateSection();
+        }
+        saveSettings();
+      });
+    });
+
+    document.getElementById("refreshBtn").addEventListener("click", () => {
+      loadReviewList();
+    });
+
+    document.getElementById("generateReviewBtn").addEventListener("click", async () => {
+      const prompt = promptInput.value.trim();
+      const think = thinkToggleBtn.dataset.think === 'true';
+      const model = think ? 'magistral-medium-2506' : modelSelect.value;
+
+      if (!prompt) return showNotification("Введите запрос для ИИ", true);
+
+      generateReviewBtn.disabled = true;
+      generateReviewBtn.classList.add("opacity-50", "cursor-not-allowed");
+      const indicator = document.getElementById("generatingIndicator");
+      indicator.classList.remove("hidden");
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/user/review/add`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ req: prompt, model }),
+          credentials: 'include'
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Ошибка при генерации");
+        }
+
+        promptInput.value = "";
+        autoResizeTextarea(promptInput);
+        await saveSettings();
+        await loadReviewList();
+        sections.reviews.classList.remove("hidden");
+        Object.keys(sections).forEach(key => {
+          if (key !== "reviews") sections[key].classList.add("hidden");
+        });
+        displayReview(0);
+      } catch (err) {
+        console.error("API Error:", err);
+        showNotification(`Ошибка: ${err.message || "Не удалось выполнить запрос."}`, true);
+      } finally {
+        generateReviewBtn.disabled = false;
+        generateReviewBtn.classList.remove("opacity-50", "cursor-not-allowed");
+        indicator.classList.add("hidden");
+        restoreCreateSection();
+      }
+    });
+async function loadReviewList() {
+  const reviewListContainer = document.getElementById("review-list");
+  const favoriteListContainer = document.getElementById("favorite-list");
+  
+  // Показываем индикатор загрузки
+  reviewListContainer.innerHTML = '<div class="loader mx-auto"></div>';
+  favoriteListContainer.innerHTML = '<div class="loader mx-auto"></div>';
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/user/review/get`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+      credentials: 'include'
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || `Ошибка загрузки отзывов: ${res.status}`);
+    }
+    
+    reviewsData = await res.json();
+    reviewsData = reviewsData.map(item => ({
+      ...item,
+      answer: typeof item.answer === 'string' ? item.answer : '',
+      think: typeof item.think === 'string' ? item.think : '',
+      title: item.title ? {
+        ...item.title,
+        title: typeof item.title.title === 'string' ? item.title.title : ''
+      } : undefined
+    }));
+
+    if (!Array.isArray(reviewsData)) {
+      throw new Error("Неверный формат данных");
+    }
+
+    reviewsData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    const favoriteReviews = reviewsData.filter(item => item.favorite);
+    const nonFavoriteReviews = reviewsData.filter(item => !item.favorite);
+
+    // Отображаем сообщение "Отзывов нет" для "Ваши запросы", если список пуст
+    reviewListContainer.innerHTML = nonFavoriteReviews.length === 0
+      ? "<p class='text-[#E0E0E0] text-sm font-medium text-center'>Тут пусто</p>"
+      : nonFavoriteReviews.map((item, index) => `
+          <li class="flex items-center justify-between transition-all duration-300">
+            <button class="sidebar-item flex-1 text-left py-2 px-3 text-[#E0E0E0] text-sm" data-index="${reviewsData.findIndex(r => r.id === item.id)}" title="${item.request}">
+              ${item.request}
+            </button>
+            <div class="flex items-center gap-1">
+              <button class="favorite-btn text-[#E0E0E0] hover:bg-[#8B0000] p-1 rounded-full transition-colors duration-300" data-id="${item.id}" data-favorite="${item.favorite}" title="${item.favorite ? 'Убрать из избранного' : 'Добавить в избранное'}">
+                <svg class="w-4 h-4" fill="${item.favorite ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.286 7.07h7.39c.964 0 1.365 1.23.588 1.81l-5.975 4.34 2.286 7.07c.3 .921-.755 1.688-1.54 1.1L12 19.347l-5.975 4.34c-.785 .588-1.84-.179-1.54-1.1l2.286-7.07-5.975-4.34c-.777-.58-.376-1.81 .588-1.81h7.39l2.286-7.07z"></path></svg>
+              </button>
+              <button class="delete-review-btn text-[#E0E0E0] hover:bg-[#8B0000] p-1 rounded-full transition-colors duration-300" data-id="${item.id}" title="Удалить запрос">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0v3m4-3v3m-7 4v8m4-8v8m4-8v8"></path></svg>
+              </button>
+            </div>
+          </li>
+        `).join("");
+
+    // Отображаем сообщение "Отзывов нет" для "Выбранные вами", если список пуст
+    favoriteListContainer.innerHTML = favoriteReviews.length === 0
+      ? "<p class='text-[#E0E0E0] text-sm font-medium text-center'>Тут пусто</p>"
+      : favoriteReviews.map((item, index) => `
+          <li class="flex items-center justify-between transition-all duration-300">
+            <button class="sidebar-item flex-1 text-left py-2 px-3 text-[#E0E0E0] text-sm" data-index="${reviewsData.findIndex(r => r.id === item.id)}" title="${item.request}">
+              ${item.request}
+            </button>
+            <div class="flex items-center gap-1">
+              <button class="favorite-btn text-[#E0E0E0] hover:bg-[#8B0000] p-1 rounded-full transition-colors duration-300" data-id="${item.id}" data-favorite="${item.favorite}" title="${item.favorite ? 'Убрать из избранного' : 'Добавить в избранное'}">
+                <svg class="w-4 h-4" fill="${item.favorite ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l2.286 7.07h7.39c.964 0 1.365 1.23.588 1.81l-5.975 4.34 2.286 7.07c.3 .921-.755 1.688-1.54 1.1L12 19.347l-5.975 4.34c-.785 .588-1.84-.179-1.54-1.1l2.286-7.07-5.975-4.34c-.777-.58-.376-1.81 .588-1.81h7.39l2.286-7.07z"/></svg>
+              </button>
+              <button class="delete-review-btn text-[#E0E0E0] hover:bg-[#8B0000] p-1 rounded-full transition-colors duration-300" data-id="${item.id}" title="Удалить запрос">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0v3m4-3v3m-7 4v8m4-8v8m4-8v8"></path></svg>
+              </button>
+            </div>
+          </li>
+        `).join("");
+
+    // Добавляем обработчики событий для кнопок
+    document.querySelectorAll(".sidebar-item").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const index = btn.dataset.index;
+        document.querySelectorAll(".sidebar-item").forEach(item => item.classList.remove("active"));
+        btn.classList.add("active");
+        currentReviewIndex = index;
+        displayReview(index);
+        sections.reviews.classList.remove("hidden");
+        Object.keys(sections).forEach(key => {
+          if (key !== "reviews") sections[key].classList.add("hidden");
+        });
+        saveSettings();
+      });
+    });
+
+    document.querySelectorAll(".delete-review-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        showModal({
+          onConfirm: async () => {
+            try {
+              await fetch(`${API_BASE_URL}/user/review/delete`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: new URLSearchParams({ id: btn.dataset.id }),
+                credentials: 'include'
+              });
+              const listItem = btn.closest("li");
+              listItem.classList.add("opacity-0", "scale-95");
+              setTimeout(() => {
+                listItem.remove();
+                loadReviewList();
+              }, 300);
+            } catch (err) {
+              console.error("Ошибка удаления:", err);
+              showNotification("Не удалось удалить запрос.", true);
+            }
+          },
+          onCancel: () => {}
+        });
+      });
+    });
+
+    document.querySelectorAll(".favorite-btn").forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const favorite = btn.dataset.favorite === "true";
+        try {
+          await fetch(`${API_BASE_URL}/user/review/favorite/set`, {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({ id, favorite: !favorite }),
+            credentials: 'include'
+          });
+          loadReviewList();
+        } catch (err) {
+          console.error("Ошибка изменения избранного:", err);
+          showNotification("Не удалось обновить статус избранного.", true);
+        }
+      });
+    });
+
+    // Восстанавливаем активное состояние, если currentReviewIndex существует
+    if (currentReviewIndex >= 0 && currentReviewIndex < reviewsData.length) {
+      const activeBtn = document.querySelector(`.sidebar-item[data-index="${currentReviewIndex}"]`);
+      if (activeBtn) activeBtn.classList.add("active");
+    }
+  } catch (err) {
+    console.error("Load Review List Error:", err);
+    // Отображаем сообщение об ошибке или отсутствии отзывов
+    reviewListContainer.innerHTML = `<p class="text-[#E0E0E0] text-sm font-medium text-center">Тут пусто</p>`;
+    favoriteListContainer.innerHTML = `<p class="text-[#E0E0E0] text-sm font-medium text-center">Тут пусто</p>`;
+  }
+}
+    async function generateTitle(id, req) {
+      const generateTitleBtn = document.querySelector(".generate-title-btn");
+      const indicator = document.createElement("div");
+      indicator.className = "mt-2 flex items-center gap-2 transition-all duration-300";
+      indicator.innerHTML = `<div class="loader"></div><p class="text-sm text-[#008080]">Генерация вопроса...</p>`;
+      generateTitleBtn.parentNode.appendChild(indicator);
+      generateTitleBtn.disabled = true;
+      generateTitleBtn.classList.add("opacity-50", "cursor-not-allowed");
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/user/review/title/add`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ id, req }),
+          credentials: 'include'
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Ошибка при генерации вопроса");
+        }
+
+        await loadReviewList();
+        const index = reviewsData.findIndex(item => item.id === id);
+        if (index !== -1) {
+          displayReview(index);
+        }
+      } catch (err) {
+        console.error("Generate Title Error:", err);
+        showNotification(`Ошибка: ${err.message || "Не удалось сгенерировать вопрос."}`, true);
+      } finally {
+        generateTitleBtn.disabled = false;
+        generateTitleBtn.classList.remove("opacity-50", "cursor-not-allowed");
+        indicator.remove();
+      }
+    }
+
+    async function saveTitle(id, text) {
+      const toggleTitleEditBtn = document.querySelector(".toggle-title-edit-btn");
+      const indicator = document.createElement("div");
+      indicator.className = "mt-2 flex items-center gap-2 transition-all duration-300";
+      indicator.innerHTML = `<div class="loader"></div><p class="text-sm text-[#008080]">Сохранение ответа...</p>`;
+      toggleTitleEditBtn.parentNode.appendChild(indicator);
+      toggleTitleEditBtn.disabled = true;
+      toggleTitleEditBtn.classList.add("opacity-50", "cursor-not-allowed");
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/user/review/title/update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ id, text }),
+          credentials: 'include'
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Ошибка при сохранении ответа");
+        }
+
+        // Update local reviewsData
+        const index = reviewsData.findIndex(item => item.id === id);
+        if (index !== -1) {
+          reviewsData[index].title = reviewsData[index].title || {};
+          reviewsData[index].title.title = text;
+        }
+      } catch (err) {
+        console.error("Save Title Error:", err);
+        showNotification(`Ошибка: ${err.message || "Не удалось сохранить ответ."}`, true);
+        throw err;
+      } finally {
+        toggleTitleEditBtn.disabled = false;
+        toggleTitleEditBtn.classList.remove("opacity-50", "cursor-not-allowed");
+        indicator.remove();
+      }
+    }
+
+    async function updateReviewText(id, text) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/user/review/update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({ id, text }),
+          credentials: 'include'
+        });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || "Ошибка при обновлении ответа");
+        }
+        // Update local reviewsData
+        const index = reviewsData.findIndex(item => item.id === id);
+        if (index !== -1) {
+          reviewsData[index].answer = text;
+        }
+      } catch (err) {
+        console.error("Update Review Error:", err);
+        showNotification(`Ошибка: ${err.message || "Не удалось обновить ответ."}`, true);
+        throw err;
+      }
+    }
+
+    function displayReview(index) {
+      const item = reviewsData[index];
+      let isEditing = false;
+      let isEditingTitle = false;
+      const container = document.getElementById("selected-review");
+
+      function renderContent() {
+        container.innerHTML = `
+          <div class="space-y-6 transition-all duration-300">
+            <div class="flex justify-between items-center">
+              <div>
+                <h3 class="font-semibold text-xl text-[#E0E0E0]">Основной запрос</h3>
+                <p class="text-base text-[#E0E0E0] request-text">${item.request}</p>
+              </div>
+              <span class="text-sm text-[#E0E0E0] opacity-60">${formatDate(item.date)}</span>
+            </div>
+            <div class="response-container text-base text-[#E0E0E0] response-text ${isEditing ? '' : 'prose'} max-w-none">
+              ${isEditing ? `<textarea class="response-editor w-full p-4 rounded-lg resize-y min-h-[250px] text-base bg-[#2A2A2A]" style="color: #E0E0E0;">${item.answer || ""}</textarea>` : marked.parse(item.answer || "")}
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <button class="toggle-edit-btn btn-primary px-4 py-2 rounded-lg text-base flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isEditing ? 'M5 13l4 4L19 7' : 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'}"></path></svg>
+                ${isEditing ? 'Сохранить' : 'Редактировать'}
+              </button>
+              <button class="cancel-edit-btn btn-secondary px-4 py-2 rounded-lg text-base flex items-center gap-2 ${isEditing ? '' : 'hidden'}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                Отмена
+              </button>
+              <button class="repeat-request-btn btn-primary px-4 py-2 rounded-lg text-base flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Использовать запрос повторно
+              </button>
+            </div>
+            <hr class="my-4 border-[#2A2A2A]" />
+            <div class="space-y-2">
+              <label class="text-sm text-[#E0E0E0] font-medium">Задать вопрос по тексту:</label>
+              <textarea class="title-request-input w-full p-4 rounded-lg resize-y min-h-[60px] text-base bg-[#2A2A2A]" style="color: #E0E0E0;">${item.title?.request || item.request || ""}</textarea>
+            </div>
+            <div class="space-y-2">
+              <label class="text-sm text-[#E0E0E0] font-medium">Ответ на вопрос:</label>
+              <div class="title-output-container text-base text-[#E0E0E0] ${isEditingTitle ? '' : 'prose'} max-w-none">
+                ${isEditingTitle ? `<textarea class="title-output-editor w-full p-4 rounded-lg resize-y min-h-[60px] text-base bg-[#2A2A2A]" style="color: #E0E0E0;">${item.title?.title || ""}</textarea>` : marked.parse(item.title?.title || "")}
+              </div>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+              <button class="toggle-title-edit-btn btn-primary px-4 py-2 rounded-lg text-base flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isEditingTitle ? 'M5 13l4 4L19 7' : 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'}"></path></svg>
+                ${isEditingTitle ? 'Сохранить' : 'Редактировать'}
+              </button>
+              <button class="cancel-title-edit-btn btn-secondary px-4 py-2 rounded-lg text-base flex items-center gap-2 ${isEditingTitle ? '' : 'hidden'}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                Отмена
+              </button>
+              <button class="generate-title-btn btn-primary px-4 py-2 rounded-lg text-base flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                Задать вопрос
+              </button>
+            </div>
+            <div id="saveIndicator" class="hidden mt-2 text-[#008080] text-base transition-all duration-300">Ответ сохранен</div>
+            <div class="stats-container bg-[#1E1E1E] p-4 rounded-lg space-y-3 text-sm text-[#E0E0E0]">
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-[#008080]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                <p><strong>Модель:</strong> ${item.model}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <svg class="w-5 h-5 text-[#008080]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                <p class="stats-text"><strong>Статистика:</strong> ${getStats(item.answer)}</p>
+              </div>
+              ${item.think && item.think.trim() ? `<div class="flex items-start gap-2">
+                     <svg class="w-5 h-5 text-[#008080] mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707-.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707M12 14a5 5 0 01-5-5h10a5 5 0 01-5 5z"></path></svg>
+                     <div>
+                       <p><strong>Мысль:</strong></p>
+                       <span class="block mt-1 bg-[#121212] p-3 rounded-lg text-sm">${marked.parse(item.think)}</span>
+                     </div>
+                   </div>` : ''}
+            </div>
+          </div>
+        `;
+
+        const toggleEditBtn = container.querySelector(".toggle-edit-btn");
+        const cancelEditBtn = container.querySelector(".cancel-edit-btn");
+        const repeatBtn = container.querySelector(".repeat-request-btn");
+        const generateTitleBtn = container.querySelector(".generate-title-btn");
+        const toggleTitleEditBtn = container.querySelector(".toggle-title-edit-btn");
+        const cancelTitleEditBtn = container.querySelector(".cancel-title-edit-btn");
+        const statsText = container.querySelector(".stats-text");
+        const titleInput = container.querySelector(".title-request-input");
+        const titleOutputContainer = container.querySelector(".title-output-container");
+
+        if (toggleEditBtn) {
+          toggleEditBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            if (isEditing) {
+              const editor = container.querySelector(".response-editor");
+              if (!editor) {
+                showNotification("Ошибка: поле редактирования не найдено.", true);
+                return;
+              }
+              const newText = editor.value.trim();
+              try {
+                await updateReviewText(item.id, newText);
+                const saveIndicator = container.querySelector("#saveIndicator");
+                saveIndicator.classList.remove("hidden");
+                setTimeout(() => saveIndicator.classList.add("hidden"), 2000);
+                statsText.innerHTML = `<strong>Статистика:</strong> ${getStats(newText)}`;
+              } catch (err) {
+                return;
+              }
+            }
+            isEditing = !isEditing;
+            renderContent();
+          });
+        }
+
+        if (cancelEditBtn) {
+          cancelEditBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            isEditing = false;
+            renderContent();
+          });
+        }
+
+        if (repeatBtn) {
+          repeatBtn.addEventListener("click", () => {
+            promptInput.value = item.request;
+            autoResizeTextarea(promptInput);
+            sections.create.classList.remove("hidden");
+            Object.keys(sections).forEach(key => {
+              if (key !== "create") sections[key].classList.add("hidden");
+            });
+            restoreCreateSection();
+            saveSettings();
+          });
+        }
+
+        if (generateTitleBtn && titleInput) {
+          generateTitleBtn.addEventListener("click", () => {
+            const req = titleInput.value.trim();
+            if (!req) {
+              showNotification("Введите вопрос по тексту", true);
+              return;
+            }
+            generateTitle(item.id, req);
+          });
+        }
+
+        if (toggleTitleEditBtn) {
+          toggleTitleEditBtn.addEventListener("click", async (e) => {
+            e.preventDefault();
+            if (isEditingTitle) {
+              const editor = container.querySelector(".title-output-editor");
+              if (!editor) {
+                showNotification("Ошибка: поле редактирования не найдено.", true);
+                return;
+              }
+              const newText = editor.value.trim();
+              try {
+                await saveTitle(item.id, newText);
+                const saveIndicator = container.querySelector("#saveIndicator");
+                saveIndicator.classList.remove("hidden");
+                setTimeout(() => saveIndicator.classList.add("hidden"), 2000);
+              } catch (err) {
+                return;
+              }
+            }
+            isEditingTitle = !isEditingTitle;
+            renderContent();
+          });
+        }
+
+        if (cancelTitleEditBtn) {
+          cancelTitleEditBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            isEditingTitle = false;
+            renderContent();
+          });
+        }
+
+        if (isEditing) {
+          const editor = container.querySelector(".response-editor");
+          if (editor) {
+            autoResizeTextarea(editor);
+            editor.addEventListener("input", () => {
+              autoResizeTextarea(editor);
+              const text = editor.value;
+              statsText.innerHTML = `<strong>Статистика:</strong> ${getStats(text)}`;
+            });
+          }
+        }
+
+        if (titleInput) {
+          autoResizeTextarea(titleInput);
+          titleInput.addEventListener("input", () => autoResizeTextarea(titleInput));
+        }
+
+        if (titleOutputContainer) {
+          const editor = container.querySelector(".title-output-editor");
+          if (editor) {
+            autoResizeTextarea(editor);
+            editor.addEventListener("input", () => autoResizeTextarea(editor));
+          }
+        }
+      }
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.toggle-code')) {
+          const button = e.target.closest('.toggle-code');
+          const codeContainer = button.closest('.code-container');
+          const codeBlock = codeContainer.querySelector('pre');
+          codeBlock.style.display = codeBlock.style.display === 'none' ? 'block' : 'none';
+          button.querySelector('svg path').setAttribute('d', codeBlock.style.display === 'none' ? 'M5 5l7 7 7-7' : 'M5 15l7-7 7 7');
+        } else if (e.target.closest('.copy-code')) {
+          const button = e.target.closest('.copy-code');
+          const codeContainer = button.closest('.code-container');
+          const code = codeContainer.querySelector('code').innerText;
+          navigator.clipboard.writeText(code).then(() => {
+            showNotification('Код скопирован в буфер обмена');
+          });
+        }
+      });
+      renderContent();
+    }
+
+    function getStats(text) {
+      if (!text) return "0 символов (с пробелами), 0 символов (без пробелов), 0 слов, 0 предложений";
+      const charsWithSpaces = text.length;
+      const charsWithoutSpaces = text.replace(/\s/g, '').length;
+      const words = text.trim().split(/\s+/).filter(Boolean).length;
+      const sentences = text.trim().split(/[.!?]+/).filter(Boolean).length;
+      return `${charsWithSpaces} символов (с пробелами), ${charsWithoutSpaces} символов (без пробелов), ${words} слов, ${sentences} предложений`;
+    }
+
+    function updateStatistics() {
+      const text = document.getElementById("statsInput").value;
+      const charsWithSpaces = text.length;
+      const charsWithoutSpaces = text.replace(/\s/g, '').length;
+      const words = text.trim().split(/\s+/).filter(Boolean).length;
+      const sentences = text.trim().split(/[.!?]+/).filter(Boolean).length;
+
+      const updateStat = (id, value) => {
+        const element = document.getElementById(id);
+        element.textContent = value;
+        element.classList.remove("stat-number");
+        void element.offsetWidth;
+        element.classList.add("stat-number");
+      };
+
+      updateStat("stats-chars-spaces", charsWithSpaces);
+      updateStat("stats-chars-no-spaces", charsWithoutSpaces);
+      updateStat("stats-words", words);
+      updateStat("stats-sentences", sentences);
+    }
+
+    document.getElementById("statsInput")?.addEventListener("input", () => {
+      autoResizeTextarea(document.getElementById("statsInput"));
+      updateStatistics();
+    });
+
+    function formatDate(isoDate) {
+      try {
+        const date = new Date(isoDate);
+        return date.toLocaleString("ru-RU", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch {
+        return "Неверная дата";
+      }
+    }
+
+    // Load settings and reviews on page load
+    async function initialize() {
+      await loadSettings();
+      await loadReviewList();
+      sections.create.classList.remove("hidden");
+      restoreCreateSection();
+      updateStatistics();
+    }
+
+    initialize();
+</script>
+</body>
+</html>
