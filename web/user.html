@@ -541,7 +541,7 @@
   </main>
   
 <script>
-    const API_BASE_URL = 'http://localhost:8080';
+    const API_BASE_URL = 'http://38.180.157.59:8080';
 
     // Custom alert function for corner notifications
     function showNotification(message, isError = false) {
@@ -673,8 +673,7 @@
         const res = await fetch(`${API_BASE_URL}/user/setting/update`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ request, model, think }),
-          credentials: 'include'
+          body: new URLSearchParams({ request, model, think })
         });
         if (!res.ok) {
           const errorData = await res.json();
@@ -695,8 +694,7 @@
     async function loadSettings() {
       try {
         const res = await fetch(`${API_BASE_URL}/user/setting/get`, {
-          headers: { "Content-Type": "application/json" },
-          credentials: 'include'
+          headers: { "Content-Type": "application/json" }
         });
         if (!res.ok) {
           const errorData = await res.json();
@@ -768,8 +766,7 @@
         const res = await fetch(`${API_BASE_URL}/user/review/add`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ req: prompt, model }),
-          credentials: 'include'
+          body: new URLSearchParams({ req: prompt, model })
         });
 
         if (!res.ok) {
@@ -807,8 +804,7 @@ async function loadReviewList() {
   try {
     const res = await fetch(`${API_BASE_URL}/user/review/get`, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
-      credentials: 'include'
+      headers: { "Content-Type": "application/json" }
     });
     
     if (!res.ok) {
@@ -898,8 +894,7 @@ async function loadReviewList() {
               await fetch(`${API_BASE_URL}/user/review/delete`, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({ id: btn.dataset.id }),
-                credentials: 'include'
+                body: new URLSearchParams({ id: btn.dataset.id })
               });
               const listItem = btn.closest("li");
               listItem.classList.add("opacity-0", "scale-95");
@@ -925,8 +920,7 @@ async function loadReviewList() {
           await fetch(`${API_BASE_URL}/user/review/favorite/set`, {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({ id, favorite: !favorite }),
-            credentials: 'include'
+            body: new URLSearchParams({ id, favorite: !favorite })
           });
           loadReviewList();
         } catch (err) {
@@ -961,8 +955,7 @@ async function loadReviewList() {
         const res = await fetch(`${API_BASE_URL}/user/review/title/add`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ id, req }),
-          credentials: 'include'
+          body: new URLSearchParams({ id, req })
         });
 
         if (!res.ok) {
@@ -998,8 +991,7 @@ async function loadReviewList() {
         const res = await fetch(`${API_BASE_URL}/user/review/title/update`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ id, text }),
-          credentials: 'include'
+          body: new URLSearchParams({ id, text })
         });
 
         if (!res.ok) {
@@ -1029,8 +1021,7 @@ async function loadReviewList() {
         const res = await fetch(`${API_BASE_URL}/user/review/update`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ id, text }),
-          credentials: 'include'
+          body: new URLSearchParams({ id, text })
         });
         if (!res.ok) {
           const errorData = await res.json();
