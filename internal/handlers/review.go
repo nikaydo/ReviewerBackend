@@ -54,7 +54,7 @@ func (h *Handlers) ReviewAdd(w http.ResponseWriter, r *http.Request) {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	answer, err := ai.Generate(model, h.Pg.Env.EnvMap["MISTRAL_API_KEY"], req, "", "")
+	answer, err := ai.Generate(model, h.Pg.Env.EnvMap["MISTRAL_API_KEY"], req, "", false)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
@@ -80,4 +80,39 @@ func (h *Handlers) ReviewDelete(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 
+}
+
+func (h *Handlers) ReviewGenTitle(w http.ResponseWriter, r *http.Request) {
+	req := r.FormValue("req")
+	id := r.FormValue("id")
+	_, username, err := GetUsername(w, r, h.Pg.Env)
+	if err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	tab, err := h.Pg.ReviewGetOne(username, id)
+	if err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	answer, err := ai.Generate("ministral-3b-2410", h.Pg.Env.EnvMap["MISTRAL_API_KEY"], req, tab.Answer, true)
+	if err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	if err := h.Pg.ReviewTitleAdd(id, answer.Response, req); err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handlers) ReviewTitleUpdate(w http.ResponseWriter, r *http.Request) {
+	text := r.FormValue("text")
+	id := r.FormValue("id")
+	if err := h.Pg.ReviewTitleUpdate(text, id); err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }

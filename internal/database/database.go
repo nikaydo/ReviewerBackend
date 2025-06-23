@@ -44,6 +44,16 @@ func InitBD(e config.Env) Database {
 		log.Fatalf("Ошибка создания таблицы: %v", err)
 	}
 	_, err = conn.Exec(context.Background(), `
+		CREATE TABLE IF NOT EXISTS reviewTitles (
+			idReview INT PRIMARY KEY,
+			title TEXT,
+			request TEXT
+		)
+	`)
+	if err != nil {
+		log.Fatalf("Ошибка создания таблицы: %v", err)
+	}
+	_, err = conn.Exec(context.Background(), `
 		CREATE TABLE IF NOT EXISTS userSetting (
 			id SERIAL PRIMARY KEY,
 			username TEXT NOT NULL,

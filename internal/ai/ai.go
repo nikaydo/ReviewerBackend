@@ -15,23 +15,20 @@ type ResponseFromAI struct {
 	Think    string `json:"think"`
 }
 
-func Generate(model, api, reqv, system, assistant string) (ResponseFromAI, error) {
+func Generate(model, api, reqv, promt string, sys bool) (ResponseFromAI, error) {
 	var R ResponseFromAI
 	url := "https://api.mistral.ai/v1/chat/completions"
+
 	payload := map[string]any{
 		"model": model,
 		"messages": []map[string]string{
-			{
-				"role":    "system",
-				"content": system,
-			},
 			{
 				"role":    "user",
 				"content": reqv,
 			},
 			{
-				"role":    "assistant",
-				"content": assistant,
+				"role":    "system",
+				"content": promt,
 			},
 		},
 	}
@@ -68,6 +65,7 @@ func Generate(model, api, reqv, system, assistant string) (ResponseFromAI, error
 		}
 		return R, nil
 	}
+
 	R.Response = response.Choices[0].Message.Content
 	return R, nil
 }
@@ -75,7 +73,6 @@ func Generate(model, api, reqv, system, assistant string) (ResponseFromAI, error
 func GenWithThink(response models.ResponseFromApi) (ResponseFromAI, error) {
 	var R ResponseFromAI
 	if len(response.Choices) == 0 {
-		fmt.Println("Пустой ответ")
 		return R, fmt.Errorf("empty response")
 	}
 	otvet := strings.Split(response.Choices[0].Message.Content, "</think>")

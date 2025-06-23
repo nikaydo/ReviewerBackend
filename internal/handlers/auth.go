@@ -67,7 +67,11 @@ func (h *Handlers) SignUp(w http.ResponseWriter, r *http.Request) {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	http.SetCookie(w, MakeCookie("jwt", j.AccessToken, time.Duration(10*time.Minute)))
+	cockie, err := strconv.Atoi(h.Pg.Env.EnvMap["COCKIE_TTL"])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	http.SetCookie(w, MakeCookie("jwt", j.AccessToken, time.Duration(time.Duration(cockie)*time.Minute)))
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write([]byte(j.AccessToken))
 	if err != nil {

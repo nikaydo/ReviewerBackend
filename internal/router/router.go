@@ -23,31 +23,27 @@ func (rt *Router) Router() http.Handler {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
-
 	r.Route("/user", func(r chi.Router) {
 		r.Use(rt.Handlers.CheckJWT)
-		r.Get("/setting/get", rt.Handlers.GetSettings)
-		r.Get("/setting/save", rt.Handlers.SaveSettings)
-		r.Post("/setting/update", rt.Handlers.UpdateSettings)
-
-		r.Get("/review/get", rt.Handlers.ReviewGet)
-		r.Post("/review/favorite/set", rt.Handlers.Favorite)
-		r.Post("/review/delete", rt.Handlers.ReviewDelete)
-		r.Post("/review/add", rt.Handlers.ReviewAdd)
-		r.Post("/review/update", rt.Handlers.ReviewUpdate)
-
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "./web/index.html")
+		r.Route("/setting", func(r chi.Router) {
+			r.Get("/get", rt.Handlers.GetSettings)
+			r.Get("/save", rt.Handlers.SaveSettings)
+			r.Post("/update", rt.Handlers.UpdateSettings)
+		})
+		r.Route("/review", func(r chi.Router) {
+			r.Route("/title", func(r chi.Router) {
+				r.Post("/add", rt.Handlers.ReviewGenTitle)
+				r.Post("/update", rt.Handlers.ReviewTitleUpdate)
+			})
+			r.Get("/get", rt.Handlers.ReviewGet)
+			r.Post("/delete", rt.Handlers.ReviewDelete)
+			r.Post("/add", rt.Handlers.ReviewAdd)
+			r.Post("/update", rt.Handlers.ReviewUpdate)
+			r.Post("/favorite/set", rt.Handlers.Favorite)
 		})
 	})
 	r.Post("/signin", rt.Handlers.SignIn)
 	r.Post("/signup", rt.Handlers.SignUp)
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./web/hello.html")
-	})
-	r.Get("/signin", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./web/auth.html")
-	})
-	r.Handle("/bg/*", http.StripPrefix("/bg/", http.FileServer(http.Dir("./web/bg"))))
+	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("./web/static"))))
 	return r
 }

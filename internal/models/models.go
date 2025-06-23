@@ -19,14 +19,22 @@ type UserTab struct {
 	Think    string    `json:"think"`
 	Model    string    `json:"model"`
 	Favorite bool      `json:"favorite"`
+	Title    Title     `json:"title"`
 	Date     time.Time `json:"date"`
 }
 
 type UserSettings struct {
-	Id       string `json:"id"`
+	Id       string `json:"id,omitempty"`
 	Username string `json:"username"`
 	Request  string `json:"request"`
 	Model    string `json:"model"`
+}
+
+type Title struct {
+	Id       string  `json:"id,omitempty"`
+	Request  *string `json:"request"`
+	Title    *string `json:"title"`
+	IdReview string  `json:"idreview"`
 }
 
 type ResponseFromApi struct {
@@ -35,4 +43,9 @@ type ResponseFromApi struct {
 			Content string `json:"content"`
 		} `json:"message"`
 	} `json:"choices"`
+}
+
+type ResponseFromAI struct {
+	Response string `json:"response"`
+	Think    string `json:"think"`
 }
