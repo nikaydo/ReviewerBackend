@@ -239,16 +239,16 @@
       justify-content: center;
       
       /* Base dimensions */
-      padding: 0.75rem 1.5rem;
-      border-radius: 0.375rem;
-      border: none;
+      padding: 1.5rem 3rem;
+      border-radius: 0; /* Square corners */
+      border: 1px solid #e5e5e5; /* White border */
       
       /* Base interaction */
       cursor: pointer;
       user-select: none;
       
       /* Base transition */
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: none; /* Remove transition for hover/active */
       
       /* Base state */
       position: relative;
@@ -257,61 +257,55 @@
     
     /* Primary Button - Modern teal theme */
     .btn-primary {
-      background: linear-gradient(135deg, #0A2463 0%, #2DD4BF 100%);
-      color: #e5e5e5;
-      box-shadow: 0 2px 4px rgba(10, 36, 99, 0.2);
+      background: transparent;
+      color: #2DD4BF;
+      box-shadow: none;
       letter-spacing: 0.025em;
       text-transform: uppercase;
-      font-size: 0.75rem;
+      font-size: 1rem;
     }
     
     .btn-primary:hover {
-      background: linear-gradient(135deg, #2DD4BF 0%, #06B6D4 100%);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(45, 212, 191, 0.3);
+      background: transparent; /* No background change */
+      color: #2DD4BF; /* Keep original color */
     }
     
     .btn-primary:active {
-      background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(45, 212, 191, 0.4);
+      background: transparent; /* No background change */
+      color: #2DD4BF; /* Keep original color */
     }
     
     .btn-primary:disabled {
-      background: linear-gradient(135deg, #374151 0%, #4B5563 100%);
-      color: #9CA3AF;
+      background: transparent;
+      color: #4B5563;
       cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
+      border-color: rgba(229, 229, 229, 0.3); /* Dim border when disabled */
     }
     
-    /* Secondary Button - Minimalist transparent */
+    /* Secondary Button */
     .btn-secondary {
       background: transparent;
       color: rgba(229, 229, 229, 0.6);
-      border: 1px solid rgba(229, 229, 229, 0.2);
       letter-spacing: 0.025em;
       text-transform: uppercase;
-      font-size: 0.75rem;
+      font-size: 1rem;
     }
     
     .btn-secondary:hover {
-      color: #e5e5e5;
-      border-color: rgba(229, 229, 229, 0.4);
-      background: rgba(229, 229, 229, 0.05);
-      transform: translateY(-1px);
+      background: transparent; /* No background change */
+      color: rgba(229, 229, 229, 0.6); /* Keep original color */
     }
     
     .btn-secondary:active {
-      background: rgba(229, 229, 229, 0.1);
-      transform: translateY(0);
+      background: transparent; /* No background change */
+      color: rgba(229, 229, 229, 0.6); /* Keep original color */
     }
     
     .btn-secondary:disabled {
       color: rgba(229, 229, 229, 0.3);
-      border-color: rgba(229, 229, 229, 0.1);
+      background: transparent;
       cursor: not-allowed;
-      transform: none;
+      border-color: rgba(229, 229, 229, 0.3); /* Dim border when disabled */
     }
     .hero-title {
       font-weight: 200;
@@ -422,7 +416,7 @@
       /* Button adjustments */
       .btn-primary, .btn-secondary {
         width: 100%;
-        padding: 0.875rem 1rem;
+        padding: 1rem 2rem; /* Adjusted for mobile */
         font-size: 0.875rem;
       }
       
@@ -543,8 +537,8 @@
     <div class="w-full max-w-6xl relative">
       <!-- Hero Content -->
       <div id="heroContent" class="hero-content visible-content text-center">
-    <h1 class="hero-title">AI Reviews</h1>
-    <p class="hero-subtitle">Intelligent Feedback Generation</p>
+        <h1 class="hero-title">AI Reviews</h1>
+        <p class="hero-subtitle">Intelligent Feedback Generation</p>
         <button onclick="toggleAuth()" class="btn-primary">Начать</button>
       </div>
       <!-- Auth Content -->
@@ -564,7 +558,7 @@
               <div class="form-group">
                 <input type="password" id="loginPassword" placeholder="Пароль" class="form-input w-full" required>
               </div>
-              <button type="submit" id="loginBtn" class="btn-primary w-full mb-4">Войти</button>
+              <button type="submit" id="loginBtn" class="btn-secondary w-full mb-4">Войти</button>
               <div id="loginErrorMessage" class="message"></div>
             </form>
           </div>
@@ -577,7 +571,7 @@
               <div class="form-group">
                 <input type="password" id="registerPassword" placeholder="Пароль" class="form-input w-full" required>
               </div>
-              <button type="submit" id="registerBtn" class="btn-primary w-full mb-4">Создать аккаунт</button>
+              <button type="submit" id="registerBtn" class="btn-secondary w-full mb-4">Создать аккаунт</button>
               <div id="registerErrorMessage" class="message"></div>
             </form>
           </div>
