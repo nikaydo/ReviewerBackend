@@ -1,7 +1,6 @@
 package handles
 
 import (
-	"fmt"
 	"main/internal/ai"
 	"net/http"
 )
@@ -132,7 +131,6 @@ func (h *Handlers) ReviewTitleUpdateMainPromt(w http.ResponseWriter, r *http.Req
 		return
 	}
 	if err := h.Pg.ReviewTitleUpdatePromt(text, uuid); err != nil {
-		fmt.Println(err)
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}

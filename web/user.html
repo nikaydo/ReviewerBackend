@@ -1382,11 +1382,13 @@ thinkToggleBtn.addEventListener('click', () => {
       loadReviewList();
     });
 
-    document.getElementById("generateReviewBtn").addEventListener("click", async () => {
+document.getElementById("generateReviewBtn").addEventListener("click", async () => {
   const prompt = promptInput.value.trim();
   const think = thinkToggleBtn.dataset.think === 'true';
   const model = think ? 'magistral-medium-2506' : modelSelect.value;
+  const selectedPreset = getSelectedPreset();
 
+  // Валидация ввода
   if (!prompt) {
     showNotification("Введите запрос для ИИ", true);
     promptInput.focus();
@@ -1420,12 +1422,15 @@ thinkToggleBtn.addEventListener('click', () => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 120000);
 
-    const selectedPreset = getSelectedPreset();
     const requestParams = { request: prompt, model };
-
     if (selectedPreset) {
       requestParams.userpreset = selectedPreset;
+      console.log("Отправляется userpreset:", selectedPreset); // Для отладки
+    } else {
+      console.log("Пресет не выбран, userpreset не добавлен");
     }
+
+    console.log("Параметры запроса:", requestParams); // Дополнительное логирование
 
     const res = await apiRequest(`${API_BASE_URL}/user/review/add`, {
       method: "POST",
@@ -1443,6 +1448,11 @@ thinkToggleBtn.addEventListener('click', () => {
 
     promptInput.value = "";
     autoResizeTextarea(promptInput);
+    const resetPresetBtn = document.getElementById("resetPresetBtn");
+    const presetList = document.getElementById("presetList");
+    presetList.querySelectorAll('.preset-item').forEach(item => item.classList.remove('selected'));
+    resetPresetBtn.classList.add('hidden');
+
     await saveSettings();
     await loadReviewList();
 
@@ -2355,11 +2365,6 @@ function getSelectedPreset() {
   return selectedItem ? selectedItem.dataset.uuid : null;
 }
     
-    // Get selected preset UUID
-    function getSelectedPreset() {
-      const selectedRadio = document.querySelector('input[name="preset"]:checked');
-      return selectedRadio ? selectedRadio.value : null;
-    }
 
     // Character counting functionality
     function updateCharacterCount(textArea, counterId) {
@@ -2373,34 +2378,58 @@ function getSelectedPreset() {
     // Copy to clipboard functionality
 function copyToClipboard(elementSelector) {
   let textToCopy = '';
-  let element = document.getElementById(elementSelector);
+  let element = document.getElementById(elementSelector) || document.querySelector('.' + elementSelector);
 
   if (!element) {
-    element = document.querySelector('.' + elementSelector);
+    showNotification('Элемент не найден', true);
+    return;
   }
 
-  if (element) {
-    if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
-      textToCopy = element.value;
-    } else {
-      // For prose content, get the raw text, excluding HTML tags
-      textToCopy = element.innerText || element.textContent;
-    }
-
-    if (textToCopy) {
-      navigator.clipboard.writeText(textToCopy).then(() => {
-        showNotification('Текст скопирован в буфер обмена');
-      }).catch(err => {
-        console.error('Ошибка копирования:', err);
-        showNotification('Не удалось скопировать текст.', true);
-      });
-    } else {
-      showNotification('Нет текста для копирования', true);
-    }
+  if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
+    textToCopy = element.value;
   } else {
-    showNotification('Элемент не найден', true);
+    textToCopy = element.innerText || element.textContent;
+  }
+
+  if (!textToCopy.trim()) {
+    showNotification('Нет текста для копирования', true);
+    return;
+  }
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => showNotification('Текст скопирован в буфер обмена'))
+      .catch(err => {
+        console.error('Ошибка Clipboard API:', err);
+        fallbackCopy(textToCopy);
+      });
+  } else {
+    fallbackCopy(textToCopy);
   }
 }
+
+// Фоллбэк через textarea
+function fallbackCopy(text) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.setAttribute('readonly', '');
+  textarea.style.position = 'absolute';
+  textarea.style.left = '-9999px';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  try {
+    const successful = document.execCommand('copy');
+    showNotification(successful ? 'Текст скопирован (резервный способ)' : 'Не удалось скопировать текст', !successful);
+  } catch (err) {
+    console.error('Ошибка fallback-копирования:', err);
+    showNotification('Ошибка при копировании текста', true);
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
 
     // Setup character counters
     function setupCharacterCounters() {
