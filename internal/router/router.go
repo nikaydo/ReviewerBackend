@@ -35,11 +35,18 @@ func (rt *Router) Router() http.Handler {
 				r.Post("/add", rt.Handlers.ReviewGenTitle)
 				r.Post("/update", rt.Handlers.ReviewTitleUpdate)
 			})
+			r.Post("/mainpromt", rt.Handlers.ReviewTitleUpdateMainPromt)
 			r.Get("/get", rt.Handlers.ReviewGet)
 			r.Post("/delete", rt.Handlers.ReviewDelete)
 			r.Post("/add", rt.Handlers.ReviewAdd)
 			r.Post("/update", rt.Handlers.ReviewUpdate)
 			r.Post("/favorite/set", rt.Handlers.Favorite)
+		})
+		r.Route("/custom", func(r chi.Router) {
+			r.Post("/add", rt.Handlers.ReviewCustomPromtAdd)
+			r.Get("/get", rt.Handlers.ReviewCustomPromtGet)
+			r.Post("/del", rt.Handlers.ReviewCustomPromtDel)
+			r.Post("/update", rt.Handlers.ReviewCustomPromtUpdate)
 		})
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, "./web/user.html")

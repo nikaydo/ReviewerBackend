@@ -2,14 +2,15 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"main/internal/models"
 	"time"
 )
 
 func (d *Database) ReviewAdd(user, request, answer, think, model string) error {
 	_, err := d.Pg.Exec(context.Background(), `
-	INSERT INTO 
-		reviewTearss 
+		INSERT INTO 
+		`+d.Env.EnvMap["DB_REVIEW"]+` 
 		(username, request,answer,think,date,model,favorite) 
 		VALUES 
 		($1, $2, $3, $4, $5, $6, $7)
@@ -20,16 +21,35 @@ func (d *Database) ReviewAdd(user, request, answer, think, model string) error {
 	return nil
 }
 
-func (d *Database) ReviewFavorite(username, favorite, id string) error {
+func (d *Database) ReviewFavorite(username, favorite, uuid string) error {
 	f := false
 	if favorite == "true" {
 		f = true
 	}
-	_, err := d.Pg.Exec(context.Background(), "UPDATE reviewTearss SET favorite = $1 WHERE username = $2 AND id = $3", f, username, id)
+	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_REVIEW"]+" SET favorite = $1 WHERE username = $2 AND uuid = $3", f, username, uuid)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func (d *Database) ReviewSum(uuid, uuidUniq string) (string, string, error) {
+	var mainPromt string
+	var customPromt string
+	err := d.Pg.QueryRow(context.Background(), `SELECT mainPromt FROM `+d.Env.EnvMap["DB_USER_SETTING"]+` WHERE uuid = $1`, uuid).Scan(&mainPromt)
+	if err != nil {
+		return "", "", err
+
+	}
+	err = d.Pg.QueryRow(context.Background(), `SELECT promt FROM `+d.Env.EnvMap["DB_USER_PROMT"]+` WHERE uuidUniq = $1`, uuidUniq).Scan(&customPromt)
+	if err != sql.ErrNoRows {
+		err = nil
+		return mainPromt, customPromt, nil
+	}
+	if err != nil {
+		return "", "", err
+	}
+	return mainPromt, customPromt, nil
 }
 
 func (d *Database) ReviewGet(user string) ([]models.UserTab, error) {
@@ -43,7 +63,8 @@ func (d *Database) ReviewGet(user string) ([]models.UserTab, error) {
 
 	rows, err := tx.Query(ctx, `
 		SELECT
-			rt.id,
+			rt.uuid,
+			rt.username,
 			rt.request,
 			rt.answer,
 			rt.think,
@@ -52,8 +73,8 @@ func (d *Database) ReviewGet(user string) ([]models.UserTab, error) {
 			rt.favorite,
 			rtitle.title,
 			rtitle.request AS title_request
-		FROM reviewTearss rt
-		LEFT JOIN reviewTitless rtitle ON rtitle.idReview = rt.id
+		FROM `+d.Env.EnvMap["DB_REVIEW"]+`  rt
+		LEFT JOIN `+d.Env.EnvMap["DB_REVIEW_ASK"]+` rtitle ON rtitle.uuidReview = rt.uuid
 		WHERE rt.username = $1;
 	`, user)
 	if err != nil {
@@ -64,10 +85,9 @@ func (d *Database) ReviewGet(user string) ([]models.UserTab, error) {
 	var ls []models.UserTab
 	for rows.Next() {
 		var u models.UserTab
-		// Убедись, что в модели есть поля для title и title_request,
-		// например, структура Title внутри UserTab
 		if err := rows.Scan(
-			&u.Id,
+			&u.Uuid,
+			&u.User,
 			&u.Request,
 			&u.Answer,
 			&u.Think,
@@ -85,48 +105,88 @@ func (d *Database) ReviewGet(user string) ([]models.UserTab, error) {
 	if err := tx.Commit(ctx); err != nil {
 		return nil, err
 	}
-
 	return ls, nil
 }
 
-func (d *Database) UpdateReview(username, r, id string) error {
-	_, err := d.Pg.Exec(context.Background(), "UPDATE reviewTearss SET answer = $1 WHERE username = $2 AND id = $3", r, username, id)
+func (d *Database) UpdateReview(username, r, uuid string) error {
+	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_REVIEW"]+" SET answer = $1 WHERE username = $2 AND uuid = $3", r, username, uuid)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *Database) ReviewGetOne(user, id string) (models.UserTab, error) {
-	rows := d.Pg.QueryRow(context.Background(), "SELECT id,request,answer,think,date,model,favorite FROM reviewTearss WHERE username = $1 AND id = $2", user, id)
+func (d *Database) ReviewGetOne(user, uuid string) (models.UserTab, error) {
+	rows := d.Pg.QueryRow(context.Background(), "SELECT uuid,request,answer,think,date,model,favorite FROM "+d.Env.EnvMap["DB_REVIEW"]+" WHERE username = $1 AND uuid = $2", user, uuid)
 	var u models.UserTab
-	if err := rows.Scan(&u.Id, &u.Request, &u.Answer, &u.Think, &u.Date, &u.Model, &u.Favorite); err != nil {
+	if err := rows.Scan(&u.Uuid, &u.Request, &u.Answer, &u.Think, &u.Date, &u.Model, &u.Favorite); err != nil {
 		return u, err
 	}
 	return u, nil
 }
 
-func (d *Database) ReviewDelete(user, id string) error {
-	_, err := d.Pg.Exec(context.Background(), "DELETE FROM reviewTearss WHERE username = $1 AND id = $2", user, id)
+func (d *Database) ReviewDelete(user, uuid string) error {
+	_, err := d.Pg.Exec(context.Background(), "DELETE FROM "+d.Env.EnvMap["DB_REVIEW"]+" WHERE username = $1 AND uuid = $2", user, uuid)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *Database) ReviewTitleAdd(idReview, title, request string) error {
+//title response
+
+func (d *Database) ReviewTitleAdd(uuidReview, title, request string) error {
 	_, err := d.Pg.Exec(context.Background(), `
-		INSERT INTO reviewTitless (idReview, title, request)
+		INSERT INTO `+d.Env.EnvMap["DB_REVIEW_ASK"]+` (uuidReview, title, request)
 		VALUES ($1, $2, $3)
-		ON CONFLICT (idReview) DO UPDATE
+		ON CONFLICT (uuidReview) DO UPDATE
 		SET title = EXCLUDED.title,
 		    request = EXCLUDED.request
-	`, idReview, title, request)
+	`, uuidReview, title, request)
 	return err
 }
 
-func (d *Database) ReviewTitleUpdate(title, id string) error {
-	_, err := d.Pg.Exec(context.Background(), "UPDATE reviewTitless SET title = $1 WHERE idReview = $2", title, id)
+func (d *Database) ReviewTitleUpdate(title, uuid string) error {
+	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_REVIEW_ASK"]+" SET title = $1 WHERE uuidReview = $2", title, uuid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// User promt
+func (d *Database) CustomPromtAdd(uuidUser, name, promt string) error {
+	_, err := d.Pg.Exec(context.Background(), "INSERT INTO "+d.Env.EnvMap["DB_USER_PROMT"]+" (uuidUser,name,promt) VALUES ($1,$2,$3)", uuidUser, name, promt)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *Database) CustomPromtUpdate(uuid, name, promt string) error {
+	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_USER_PROMT"]+" SET (name,promt) = ($1,$2) WHERE uuidUniq = $3", name, promt, uuid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *Database) CustomPromtGet(uuidUser string) ([]models.CustomPromt, error) {
+	rows, err := d.Pg.Query(context.Background(), "SELECT * FROM "+d.Env.EnvMap["DB_USER_PROMT"]+" WHERE uuidUser = $1", uuidUser)
+	if err != nil {
+		return nil, err
+	}
+	var ls []models.CustomPromt
+	for rows.Next() {
+		var c models.CustomPromt
+		rows.Scan(&c.UuidUser, &c.Uuid, &c.Name, &c.Promt)
+		ls = append(ls, c)
+	}
+	return ls, nil
+}
+
+func (d *Database) CustomPromtDel(uuid string) error {
+	_, err := d.Pg.Exec(context.Background(), "DELETE FROM "+d.Env.EnvMap["DB_USER_PROMT"]+" WHERE uuidUniq = $1", uuid)
 	if err != nil {
 		return err
 	}

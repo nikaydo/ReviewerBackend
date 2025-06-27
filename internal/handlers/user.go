@@ -3,12 +3,12 @@ package handles
 import "net/http"
 
 func (h *Handlers) SaveSettings(w http.ResponseWriter, r *http.Request) {
-	_, username, err := GetUsername(w, r, h.Pg.Env)
+	uuid, _, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	if err := h.Pg.SaveSettings(username, "", ""); err != nil {
+	if err := h.Pg.SaveSettings(uuid, "", ""); err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
@@ -18,12 +18,12 @@ func (h *Handlers) SaveSettings(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) UpdateSettings(w http.ResponseWriter, r *http.Request) {
 	request := r.FormValue("request")
 	model := r.FormValue("model")
-	_, username, err := GetUsername(w, r, h.Pg.Env)
+	uuid, _, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	if err := h.Pg.UpdateSettings(username, request, model); err != nil {
+	if err := h.Pg.UpdateSettings(uuid, request, model); err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
@@ -31,12 +31,12 @@ func (h *Handlers) UpdateSettings(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetSettings(w http.ResponseWriter, r *http.Request) {
-	_, username, err := GetUsername(w, r, h.Pg.Env)
+	uuid, _, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	u, err := h.Pg.GetSettings(username)
+	u, err := h.Pg.GetSettings(uuid)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return

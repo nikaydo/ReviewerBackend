@@ -24,29 +24,16 @@
     }
   </script>
   <style>
+    * {
+      box-sizing: border-box;
+    }
     body {
-      background: linear-gradient(135deg, #0A2463, #38BDF8);
-      background-attachment: fixed;
-      color: white;
+      background: #0f0f0f;
+      color: #e5e5e5;
       overflow: hidden;
-      animation: waterFlow 10s ease-in-out infinite;
-    }
-    @keyframes waterFlow {
-      0% { background-position: 0% 0%; }
-      50% { background-position: 100% 100%; }
-      100% { background-position: 0% 0%; }
-    }
-    body::before {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, #0A2463, #38BDF8);
-      background-size: 200% 200%;
-      animation: waterFlow 10s ease-in-out infinite;
-      z-index: -2;
+      position: relative;
+      font-weight: 300;
+      letter-spacing: 0.025em;
     }
     .canvas-bg {
       position: fixed;
@@ -56,69 +43,303 @@
       width: 100%;
       height: 100%;
     }
+    .floating-words {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      overflow: hidden;
+    }
+    .floating-word {
+      position: absolute;
+      color: rgba(229, 229, 229, 0.4);
+      font-weight: 300;
+      font-size: 18px;
+      letter-spacing: 0.1em;
+      pointer-events: none;
+      white-space: nowrap;
+      text-shadow: 0 0 10px rgba(229, 229, 229, 0.2);
+    }
+    .floating-word:nth-child(1) {
+      top: 15%;
+      left: -10%;
+      animation: wordFloatRight 20s infinite linear;
+      animation-delay: 0s;
+      font-size: 22px;
+    }
+    .floating-word:nth-child(2) {
+      top: 65%;
+      right: -10%;
+      animation: wordFloatLeft 18s infinite linear;
+      animation-delay: -2s;
+      font-size: 16px;
+    }
+    .floating-word:nth-child(3) {
+      top: 35%;
+      left: -15%;
+      animation: wordFloatRight 22s infinite linear;
+      animation-delay: -5s;
+      font-size: 20px;
+    }
+    .floating-word:nth-child(4) {
+      top: 85%;
+      right: -10%;
+      animation: wordFloatLeft 24s infinite linear;
+      animation-delay: -8s;
+      font-size: 18px;
+    }
+    .floating-word:nth-child(5) {
+      top: 25%;
+      left: -12%;
+      animation: wordFloatRight 19s infinite linear;
+      animation-delay: -11s;
+      font-size: 24px;
+    }
+    .floating-word:nth-child(6) {
+      top: 55%;
+      right: -15%;
+      animation: wordFloatLeft 21s infinite linear;
+      animation-delay: -14s;
+      font-size: 16px;
+    }
+    .floating-word:nth-child(7) {
+      top: 75%;
+      left: -10%;
+      animation: wordFloatRight 23s infinite linear;
+      animation-delay: -17s;
+      font-size: 20px;
+    }
+    .floating-word:nth-child(8) {
+      top: 45%;
+      right: -12%;
+      animation: wordFloatLeft 20s infinite linear;
+      animation-delay: -20s;
+      font-size: 18px;
+    }
+    @keyframes wordFloatRight {
+      0% {
+        transform: translateX(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.4;
+      }
+      90% {
+        opacity: 0.4;
+      }
+      100% {
+        transform: translateX(120vw);
+        opacity: 0;
+      }
+    }
+    @keyframes wordFloatLeft {
+      0% {
+        transform: translateX(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.4;
+      }
+      90% {
+        opacity: 0.4;
+      }
+      100% {
+        transform: translateX(-120vw);
+        opacity: 0;
+      }
+    }
     .transparent-panel {
-      background: transparent;
-      border: none;
+      background: rgba(15, 15, 15, 0.6);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(229, 229, 229, 0.1);
+      border-radius: 0;
     }
     .form-input {
       background: transparent;
       border: none;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-      color: white;
-      padding: 10px 0;
-      transition: border-bottom-color 0.3s ease, transform 0.3s ease;
-      position: relative;
-      caret-color: #2DD4BF;
+      border-bottom: 1px solid rgba(229, 229, 229, 0.2);
+      color: #e5e5e5;
+      padding: 16px 0;
+      font-size: 16px;
+      font-weight: 300;
+      letter-spacing: 0.025em;
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      caret-color: #e5e5e5;
     }
     .form-input::placeholder {
-      color: rgba(255, 255, 255, 0.5);
-      transition: transform 0.3s ease, opacity 0.3s ease;
-    }
-    .form-input:focus::placeholder {
-      transform: translateY(-15px);
-      opacity: 0;
+      color: rgba(229, 229, 229, 0.4);
+      font-weight: 300;
+      letter-spacing: 0.025em;
     }
     .form-input:focus {
       outline: none;
-      border-bottom-color: #2DD4BF;
-      transform: scale(1.01);
+      border-bottom-color: #e5e5e5;
+      transform: translateY(-2px);
     }
     .form-input:-webkit-autofill,
     .form-input:-webkit-autofill:hover,
-    .form-input:-webkit-autofill:focus {
-      -webkit-box-shadow: 0 0 0 1000px transparent inset;
-      -webkit-text-fill-color: white;
-      background: transparent;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
-      transition: border-bottom-color 0.3s ease;
+    .form-input:-webkit-autofill:focus,
+    .form-input:-webkit-autofill:active {
+      -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+      -webkit-text-fill-color: #e5e5e5 !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      border-bottom: 1px solid rgba(229, 229, 229, 0.2) !important;
+      transition: border-bottom-color 0.4s cubic-bezier(0.23, 1, 0.32, 1) !important;
     }
     .form-input:-webkit-autofill:focus {
-      border-bottom-color: #2DD4BF;
+      border-bottom-color: #e5e5e5 !important;
     }
     .tab {
-      transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
-      border-radius: 6px;
-      padding: 8px 16px;
-      background: linear-gradient(90deg, transparent, transparent);
+      position: relative;
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      color: rgba(229, 229, 229, 0.6);
+      font-weight: 300;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-size: 12px;
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      cursor: pointer;
+    }
+    .tab::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 1px;
+      background: #e5e5e5;
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      transform: translateX(-50%);
     }
     .tab.active {
-      background: linear-gradient(90deg, #2DD4BF, #06B6D4);
-      color: white;
-      transform: scale(1.05);
+      color: #e5e5e5;
     }
-    .tab:hover {
-      transform: scale(1.03);
+    .tab.active::after {
+      width: 100%;
     }
-    .btn-transparent {
-      border: 2px solid rgba(255, 255, 255, 0.5);
-      background: linear-gradient(90deg, #2DD4BF, #06B6D4);
-      transition: border-color 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
-      border-radius: 8px;
+    .tab:hover:not(.active) {
+      color: rgba(229, 229, 229, 0.8);
     }
-    .btn-transparent:hover {
-      border-color: #06B6D4;
-      background: linear-gradient(90deg, #06B6D4, #2DD4BF);
+    /* Unified Button System */
+    .btn {
+      /* Base typography and spacing */
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 500;
+      line-height: 1.5;
+      text-align: center;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      
+      /* Base dimensions */
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.375rem;
+      border: none;
+      
+      /* Base interaction */
+      cursor: pointer;
+      user-select: none;
+      
+      /* Base transition */
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      
+      /* Base state */
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Primary Button - Modern teal theme */
+    .btn-primary {
+      background: linear-gradient(135deg, #0A2463 0%, #2DD4BF 100%);
+      color: #e5e5e5;
+      box-shadow: 0 2px 4px rgba(10, 36, 99, 0.2);
+      letter-spacing: 0.025em;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #2DD4BF 0%, #06B6D4 100%);
       transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(45, 212, 191, 0.3);
+    }
+    
+    .btn-primary:active {
+      background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(45, 212, 191, 0.4);
+    }
+    
+    .btn-primary:disabled {
+      background: linear-gradient(135deg, #374151 0%, #4B5563 100%);
+      color: #9CA3AF;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    /* Secondary Button - Minimalist transparent */
+    .btn-secondary {
+      background: transparent;
+      color: rgba(229, 229, 229, 0.6);
+      border: 1px solid rgba(229, 229, 229, 0.2);
+      letter-spacing: 0.025em;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+    }
+    
+    .btn-secondary:hover {
+      color: #e5e5e5;
+      border-color: rgba(229, 229, 229, 0.4);
+      background: rgba(229, 229, 229, 0.05);
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary:active {
+      background: rgba(229, 229, 229, 0.1);
+      transform: translateY(0);
+    }
+    
+    .btn-secondary:disabled {
+      color: rgba(229, 229, 229, 0.3);
+      border-color: rgba(229, 229, 229, 0.1);
+      cursor: not-allowed;
+      transform: none;
+    }
+    .hero-title {
+      font-weight: 200;
+      font-size: clamp(2.5rem, 8vw, 4rem);
+      letter-spacing: -0.02em;
+      line-height: 0.9;
+      margin-bottom: 2rem;
+    }
+    .hero-subtitle {
+      font-weight: 300;
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      opacity: 0.7;
+      margin-bottom: 3rem;
+      text-transform: uppercase;
+    }
+    .brand {
+      font-weight: 200;
+      font-size: 18px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .auth-container {
+      max-width: 400px;
+      padding: 3rem;
+    }
+    .form-group {
+      margin-bottom: 2rem;
     }
     .message {
       transition: opacity 0.5s ease;
@@ -126,233 +347,344 @@
       display: none;
       text-align: center;
       margin-top: 1rem;
+      font-size: 12px;
+      letter-spacing: 0.025em;
     }
     .message.show {
       opacity: 1;
       display: block;
     }
     .hero-content, .auth-content {
-      transition: opacity 0.5s ease, transform 0.5s ease;
+      transition: all 0.6s cubic-bezier(0.23, 1, 0.32, 1);
     }
     .hidden-content {
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(30px);
       pointer-events: none;
     }
     .visible-content {
       opacity: 1;
       transform: translateY(0);
     }
+    .geometric-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -2;
+      opacity: 0.1;
+    }
+    
+    /* Mobile Responsive Styles */
+    @media (max-width: 767px) {
+      /* Navigation adjustments */
+      nav {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .brand {
+        font-size: 1rem;
+        text-align: center;
+      }
+      
+      /* Main content adjustments */
+      main {
+        padding: 1rem;
+      }
+      
+      /* Hero section */
+      .hero-title {
+        font-size: clamp(2rem, 10vw, 3rem);
+        margin-bottom: 1.5rem;
+      }
+      
+      .hero-subtitle {
+        font-size: 12px;
+        margin-bottom: 2rem;
+      }
+      
+      /* Auth container */
+      .auth-container {
+        max-width: 100%;
+        padding: 2rem 1.5rem;
+        margin: 1rem;
+      }
+      
+      /* Form adjustments */
+      .form-input {
+        padding: 12px 0;
+        font-size: 16px; /* Prevents zoom on iOS */
+      }
+      
+      /* Button adjustments */
+      .btn-primary, .btn-secondary {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        font-size: 0.875rem;
+      }
+      
+      /* Tab navigation */
+      .tab {
+        padding: 10px 20px;
+        font-size: 11px;
+      }
+      
+      /* Floating words - reduce on mobile */
+      .floating-word {
+        font-size: 14px;
+      }
+      
+      .floating-word:nth-child(1) {
+        font-size: 16px;
+      }
+      
+      .floating-word:nth-child(3) {
+        font-size: 15px;
+      }
+      
+      .floating-word:nth-child(5) {
+        font-size: 18px;
+      }
+      
+      .floating-word:nth-child(7) {
+        font-size: 15px;
+      }
+      
+      /* Message styling */
+      .message {
+        font-size: 11px;
+        margin-top: 0.75rem;
+      }
+      
+      /* Ensure proper viewport handling */
+      .min-h-screen {
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+      }
+      
+      /* Transparent panel adjustments */
+      .transparent-panel {
+        backdrop-filter: blur(15px);
+        border-radius: 0.5rem;
+      }
+      
+      /* Fixed positioning adjustments for mobile */
+      .auth-content {
+        padding: 1rem;
+      }
+      
+      /* Form group spacing */
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+      
+      /* Better touch targets */
+      button, .tab {
+        min-height: 44px;
+      }
+      
+      /* Reduce canvas effects on mobile for performance */
+      .canvas-bg {
+        opacity: 0.3;
+      }
+      
+      .floating-words {
+        opacity: 0.6;
+      }
+    }
+    
+    /* Landscape mobile adjustments */
+    @media (max-width: 767px) and (orientation: landscape) {
+      .hero-title {
+        font-size: clamp(1.5rem, 8vw, 2.5rem);
+        margin-bottom: 1rem;
+      }
+      
+      .hero-subtitle {
+        margin-bottom: 1.5rem;
+      }
+      
+      .auth-container {
+        padding: 1.5rem;
+      }
+      
+      main {
+        padding: 0.5rem;
+      }
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col font-sans">
-  <!-- Particle Background -->
+  <!-- Water Ripple Canvas -->
   <canvas id="particleCanvas" class="canvas-bg"></canvas>
 
+  <!-- Floating Review Words -->
+  <div class="floating-words">
+    <div class="floating-word">Отзывы</div>
+    <div class="floating-word">Оценка</div>
+    <div class="floating-word">Интеллект</div>
+    <div class="floating-word">Мнения</div>
+    <div class="floating-word">Анализ</div>
+    <div class="floating-word">Рекомендации</div>
+    <div class="floating-word">Обратная связь</div>
+    <div class="floating-word">Качество</div>
+  </div>
+
   <!-- Navbar -->
-  <nav class="bg-transparent text-white py-4 px-6 flex justify-between items-center">
-    <div class="text-xl font-bold tracking-tight">AI Review</div>
+  <nav class="bg-transparent py-6 px-8 flex justify-between items-center">
+    <div class="brand">AI Reviews</div>
   </nav>
 
-  <!-- Hero Section -->
-  <main class="flex-grow flex items-center justify-center text-center px-4">
-    <div class="max-w-md w-full relative">
+  <!-- Main Content -->
+  <main class="flex-grow flex items-center justify-center px-4">
+    <div class="w-full max-w-6xl relative">
       <!-- Hero Content -->
-      <div id="heroContent" class="hero-content visible-content">
-        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Отзывы с ИИ</h1>
-        <p class="text-lg mb-8 opacity-90">Создавай отзывы мгновенно с помощью передового искусственного интеллекта.</p>
-        <button onclick="toggleAuth()" class="text-white font-semibold px-6 py-2 btn-transparent">Попробовать</button>
+      <div id="heroContent" class="hero-content visible-content text-center">
+    <h1 class="hero-title">AI Reviews</h1>
+    <p class="hero-subtitle">Intelligent Feedback Generation</p>
+        <button onclick="toggleAuth()" class="btn-primary">Начать</button>
       </div>
       <!-- Auth Content -->
-      <div id="authContent" class="auth-content hidden-content absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full">
-        <div class="transparent-panel p-6 max-w-sm mx-auto">
+      <div id="authContent" class="auth-content hidden-content fixed inset-0 flex items-center justify-center">
+        <div class="transparent-panel auth-container">
           <!-- Tab Navigation -->
-          <div class="flex mb-6 justify-center gap-4">
-            <button id="loginTab" class="tab text-sm font-medium text-white active">Вход</button>
-            <button id="registerTab" class="tab text-sm font-medium text-white">Регистрация</button>
+          <div class="flex mb-8 justify-center">
+            <button id="loginTab" class="tab active">Вход</button>
+            <button id="registerTab" class="tab">Регистрация</button>
           </div>
           <!-- Login Form -->
           <div id="loginForm" class="auth-form">
             <form id="loginFormElement">
-              <div class="mb-6">
+              <div class="form-group">
                 <input type="text" id="loginEmail" placeholder="Логин" class="form-input w-full" required>
               </div>
-              <div class="mb-6">
+              <div class="form-group">
                 <input type="password" id="loginPassword" placeholder="Пароль" class="form-input w-full" required>
               </div>
-              <button type="submit" id="loginBtn" class="w-full text-white font-semibold py-2 btn-transparent">Войти</button>
-              <div id="loginStatusMessage" class="message text-yellow-300"></div>
-              <div id="loginSuccessMessage" class="message text-green-300"></div>
-              <div id="loginErrorMessage" class="message text-red-300"></div>
+              <button type="submit" id="loginBtn" class="btn-primary w-full mb-4">Войти</button>
+              <div id="loginErrorMessage" class="message"></div>
             </form>
           </div>
           <!-- Register Form -->
           <div id="registerForm" class="auth-form hidden">
             <form id="registerFormElement">
-              <div class="mb-6">
+              <div class="form-group">
                 <input type="text" id="registerEmail" placeholder="Логин" class="form-input w-full" required>
               </div>
-              <div class="mb-6">
+              <div class="form-group">
                 <input type="password" id="registerPassword" placeholder="Пароль" class="form-input w-full" required>
               </div>
-              <button type="submit" id="registerBtn" class="w-full text-white font-semibold py-2 btn-transparent">Создать</button>
-              <div id="registerStatusMessage" class="message text-yellow-300"></div>
-              <div id="registerSuccessMessage" class="message text-green-300"></div>
-              <div id="registerErrorMessage" class="message text-red-300"></div>
+              <button type="submit" id="registerBtn" class="btn-primary w-full mb-4">Создать аккаунт</button>
+              <div id="registerErrorMessage" class="message"></div>
             </form>
           </div>
-          <button onclick="toggleAuth()" class="mt-6 text-sm text-white opacity-80 hover:opacity-100 w-full text-center btn-transparent py-1">Назад</button>
+          <div class="text-center mt-8">
+            <button onclick="toggleAuth()" class="btn-secondary">Назад</button>
+          </div>
         </div>
       </div>
     </div>
   </main>
 
   <script>
-    // Particle Animation
+    // Water Ripple Effect
     const canvas = document.getElementById('particleCanvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    let ripples = [];
 
-    let particles = [];
-    let particleCount = 50;
-    let animationTimeout = null;
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
 
-    class Particle {
-      constructor(speedMultiplier = 1, isInputParticle = false, startX, startY) {
-        this.x = isInputParticle ? startX : Math.random() * canvas.width;
-        this.y = isInputParticle ? startY : Math.random() * canvas.height;
-        this.size = isInputParticle ? Math.random() * 1 + 0.5 : Math.random() * 2 + 1;
-        this.speedX = (Math.random() * 0.7 - 0.35) * speedMultiplier * (isInputParticle ? 3 : 1.5);
-        this.speedY = (Math.random() * 0.7 - 0.35) * speedMultiplier * (isInputParticle ? 3 : 1.5);
-        this.opacity = isInputParticle ? 0.8 : 0.4;
-        this.life = isInputParticle ? 25 : Infinity;
+    class Ripple {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = 0;
+        this.maxRadius = Math.random() * 100 + 50;
+        this.speed = Math.random() * 2 + 1;
+        this.opacity = 0.5;
       }
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        if (this.life !== Infinity) {
-          this.opacity -= 0.03;
-          this.life--;
-          if (this.life <= 0) {
-            const index = particles.indexOf(this);
-            if (index > -1) particles.splice(index, 1);
-          }
-        }
-        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
-      }
+
       draw() {
-        ctx.fillStyle = `rgba(56, 189, 248, ${this.opacity})`;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(229, 229, 229, ${this.opacity * 0.1})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      update() {
+        this.radius += this.speed;
+        this.opacity = 0.5 * (1 - this.radius / this.maxRadius);
+        if (this.opacity <= 0) return true;
+        return false;
       }
     }
 
-    function initParticles(count, speedMultiplier = 1) {
-      particles = particles.filter(p => p.life !== Infinity);
-      for (let i = 0; i < count; i++) {
-        particles.push(new Particle(speedMultiplier));
+    // Create subtle geometric background
+    function drawGeometricBg() {
+      const gridSize = 80;
+      const lineWidth = 0.5;
+      ctx.strokeStyle = 'rgba(229, 229, 229, 0.02)';
+      ctx.lineWidth = lineWidth;
+      
+      // Draw grid
+      for (let x = 0; x <= canvas.width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, canvas.height);
+        ctx.stroke();
+      }
+      
+      for (let y = 0; y <= canvas.height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(canvas.width, y);
+        ctx.stroke();
       }
     }
-
-    initParticles(particleCount);
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      particles.forEach(p => {
-        p.update();
-        p.draw();
-      });
+      drawGeometricBg();
+      ripples = ripples.filter(ripple => !ripple.update());
+      ripples.forEach(ripple => ripple.draw());
       requestAnimationFrame(animate);
     }
     animate();
 
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    });
+    function addRipple() {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * canvas.height;
+      ripples.push(new Ripple(x, y));
+    }
+    setInterval(addRipple, 3000);
 
-    // Auth Toggle with Particle Effect
+    // Auth Toggle
+    const heroContent = document.getElementById('heroContent');
+    const authContent = document.getElementById('authContent');
+    const loginTab = document.getElementById('loginTab');
+    const registerTab = document.getElementById('registerTab');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const loginFormElement = document.getElementById('loginFormElement');
+    const registerFormElement = document.getElementById('registerFormElement');
+    const loginErrorMessage = document.getElementById('loginErrorMessage');
+    const registerErrorMessage = document.getElementById('registerErrorMessage');
+
     function toggleAuth() {
-      const heroContent = document.getElementById('heroContent');
-      const authContent = document.getElementById('authContent');
       heroContent.classList.toggle('hidden-content');
       heroContent.classList.toggle('visible-content');
       authContent.classList.toggle('hidden-content');
       authContent.classList.toggle('visible-content');
-
-      if (!heroContent.classList.contains('visible-content')) {
-        particleCount = 100;
-        initParticles(particleCount, 2);
-        clearTimeout(animationTimeout);
-        animationTimeout = setTimeout(() => {
-          particleCount = 50;
-          initParticles(particleCount, 1);
-        }, 2000);
-      }
     }
-
-    function switchForm(formType) {
-      const loginForm = document.getElementById('loginForm');
-      const registerForm = document.getElementById('registerForm');
-      const loginTab = document.getElementById('loginTab');
-      const registerTab = document.getElementById('registerTab');
-
-      loginForm.classList.toggle('hidden', formType !== 'login');
-      registerForm.classList.toggle('hidden', formType !== 'register');
-      loginTab.classList.toggle('active', formType === 'login');
-      registerTab.classList.toggle('active', formType === 'register');
-    }
-
-    // Input Particle Effect
-    function addInputParticleEffect(input) {
-      input.addEventListener('input', (e) => {
-        const rect = e.target.getBoundingClientRect();
-        const cursorX = rect.left + rect.width / 2;
-        const cursorY = rect.top + rect.height / 2;
-        for (let i = 0; i < 2; i++) {
-          particles.push(new Particle(1, true, cursorX, cursorY));
-        }
-      });
-    }
-
-    document.getElementById('loginEmail').addEventListener('input', (e) => {
-      const rect = e.target.getBoundingClientRect();
-      const cursorX = rect.left + rect.width / 2;
-      const cursorY = rect.top + rect.height / 2;
-      for (let i = 0; i < 2; i++) {
-        particles.push(new Particle(1, true, cursorX, cursorY));
-      }
-    });
-    document.getElementById('loginPassword').addEventListener('input', (e) => {
-      const rect = e.target.getBoundingClientRect();
-      const cursorX = rect.left + rect.width / 2;
-      const cursorY = rect.top + rect.height / 2;
-      for (let i = 0; i < 2; i++) {
-        particles.push(new Particle(1, true, cursorX, cursorY));
-      }
-    });
-    document.getElementById('registerEmail').addEventListener('input', (e) => {
-      const rect = e.target.getBoundingClientRect();
-      const cursorX = rect.left + rect.width / 2;
-      const cursorY = rect.top + rect.height / 2;
-      for (let i = 0; i < 2; i++) {
-        particles.push(new Particle(1, true, cursorX, cursorY));
-      }
-    });
-    document.getElementById('registerPassword').addEventListener('input', (e) => {
-      const rect = e.target.getBoundingClientRect();
-      const cursorX = rect.left + rect.width / 2;
-      const cursorY = rect.top + rect.height / 2;
-      for (let i = 0; i < 2; i++) {
-        particles.push(new Particle(1, true, cursorX, cursorY));
-      }
-    });
-
-    // Authentication Functionality
-    const API_BASE_URL = 'http://38.180.157.59:8080';
 
     function showMessage(element, message) {
       element.textContent = message;
@@ -360,33 +692,23 @@
       setTimeout(() => element.classList.remove('show'), 3000);
     }
 
-    function clearMessages(formType) {
-      const statusMessage = document.getElementById(`${formType}StatusMessage`);
-      const successMessage = document.getElementById(`${formType}SuccessMessage`);
-      const errorMessage = document.getElementById(`${formType}ErrorMessage`);
-      statusMessage.classList.remove('show');
-      successMessage.classList.remove('show');
-      errorMessage.classList.remove('show');
-    }
+    loginTab.addEventListener('click', () => {
+      loginTab.classList.add('active');
+      registerTab.classList.remove('active');
+      loginForm.classList.remove('hidden');
+      registerForm.classList.add('hidden');
+    });
 
-    async function sendAuthRequest(url, formType) {
-      const loginInput = formType === 'login' ? document.getElementById('loginEmail') : document.getElementById('registerEmail');
-      const passwordInput = formType === 'login' ? document.getElementById('loginPassword') : document.getElementById('registerPassword');
-      const statusMessage = document.getElementById(`${formType}StatusMessage`);
-      const successMessage = document.getElementById(`${formType}SuccessMessage`);
-      const errorMessage = document.getElementById(`${formType}ErrorMessage`);
+    registerTab.addEventListener('click', () => {
+      registerTab.classList.add('active');
+      loginTab.classList.remove('active');
+      registerForm.classList.remove('hidden');
+      loginForm.classList.add('hidden');
+    });
 
-      const login = loginInput.value.trim();
-      const pass = passwordInput.value.trim();
+    const API_BASE_URL = 'http://localhost:8080';
 
-      if (!login || !pass) {
-        showMessage(errorMessage, 'Пожалуйста, заполните все поля.');
-        return;
-      }
-
-      clearMessages(formType);
-      showMessage(statusMessage, formType === 'login' ? 'Идет вход...' : 'Идет регистрация...');
-
+    async function sendAuthRequest(url, login, pass, isSignup) {
       try {
         const response = await fetch(url, {
           method: 'POST',
@@ -394,41 +716,40 @@
           body: JSON.stringify({ login, pass })
         });
 
-        const isSignup = url.includes('/signup');
-
-        if (response.ok) {
-          if (isSignup) {
-            await fetch(`${API_BASE_URL}/user/setting/save`, {
-              method: 'GET'
-            });
-          }
-          clearMessages(formType);
-          showMessage(successMessage, isSignup ? 'Успешная регистрация!' : 'Успешный вход!');
-          window.location.href = 'user';
+        if (response.ok) {  
+          window.location.href = `${API_BASE_URL}/user`;
         } else {
           const data = await response.json();
-          clearMessages(formType);
-          showMessage(errorMessage, data?.error || 'Ошибка авторизации');
+          return data?.error || 'Ошибка авторизации';
         }
       } catch (error) {
-        clearMessages(formType);
-        showMessage(errorMessage, 'Неверный логин или пароль');
-        console.error(error);
+        return 'Неверный логин или пароль';
       }
     }
 
-    document.getElementById('loginFormElement').addEventListener('submit', (e) => {
+    loginFormElement.addEventListener('submit', async (e) => {
       e.preventDefault();
-      sendAuthRequest(`${API_BASE_URL}/signin`, 'login');
+      const login = document.getElementById('loginEmail').value.trim();
+      const pass = document.getElementById('loginPassword').value.trim();
+      if (!login || !pass) {
+        showMessage(loginErrorMessage, 'Пожалуйста, заполните все поля.');
+        return;
+      }
+      const error = await sendAuthRequest(`${API_BASE_URL}/signin`, login, pass, false);
+      if (error) showMessage(loginErrorMessage, error);
     });
 
-    document.getElementById('registerFormElement').addEventListener('submit', (e) => {
+    registerFormElement.addEventListener('submit', async (e) => {
       e.preventDefault();
-      sendAuthRequest(`${API_BASE_URL}/signup`, 'register');
+      const login = document.getElementById('registerEmail').value.trim();
+      const pass = document.getElementById('registerPassword').value.trim();
+      if (!login || !pass) {
+        showMessage(registerErrorMessage, 'Пожалуйста, заполните все поля.');
+        return;
+      }
+      const error = await sendAuthRequest(`${API_BASE_URL}/signup`, login, pass, true);
+      if (error) showMessage(registerErrorMessage, error);
     });
-
-    document.getElementById('loginTab').addEventListener('click', () => switchForm('login'));
-    document.getElementById('registerTab').addEventListener('click', () => switchForm('register'));
   </script>
 </body>
 </html>

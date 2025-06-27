@@ -15,24 +15,31 @@ type ResponseFromAI struct {
 	Think    string `json:"think"`
 }
 
-func Generate(model, api, reqv, promt string, sys bool) (ResponseFromAI, error) {
+func Generate(model, api, reqv, sysPromt, assistPromt string, sys, assist bool) (ResponseFromAI, error) {
 	var R ResponseFromAI
 	url := "https://api.mistral.ai/v1/chat/completions"
-
-	payload := map[string]any{
-		"model": model,
-		"messages": []map[string]string{
-			{
-				"role":    "user",
-				"content": reqv,
-			},
-			{
-				"role":    "system",
-				"content": promt,
-			},
-		},
+	user := []map[string]string{{
+		"role":    "user",
+		"content": reqv,
+	}}
+	var msg []map[string]string
+	if sys {
+		msg = append(msg, []map[string]string{{
+			"role":    "system",
+			"content": sysPromt,
+		}}...)
 	}
-
+	if assist {
+		msg = append(msg, []map[string]string{{
+			"role":    "assistant",
+			"content": assistPromt,
+		}}...)
+	}
+	msg = append(msg, user...)
+	payload := map[string]any{
+		"model":    model,
+		"messages": msg,
+	}
 	jsonData, err := json.Marshal(payload)
 	if err != nil {
 		return R, err
@@ -65,7 +72,6 @@ func Generate(model, api, reqv, promt string, sys bool) (ResponseFromAI, error) 
 		}
 		return R, nil
 	}
-
 	R.Response = response.Choices[0].Message.Content
 	return R, nil
 }

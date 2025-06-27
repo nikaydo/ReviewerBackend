@@ -21,7 +21,7 @@ func (h *Handlers) SignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	j := jwt.JwtTokens{Env: h.Pg.Env}
-	if err = j.CreateTokens(user.Id, user.Login, ""); err != nil {
+	if err = j.CreateTokens(u.Uuid, u.Login, ""); err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
@@ -35,11 +35,7 @@ func (h *Handlers) SignIn(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, MakeCookie("jwt", j.AccessToken, time.Duration(time.Duration(cockie)*time.Minute)))
 	w.WriteHeader(http.StatusOK)
-	_, err = w.Write([]byte(j.AccessToken))
-	if err != nil {
-		writeErrorResponse(w, err, http.StatusBadRequest)
-		return
-	}
+
 }
 
 func (h *Handlers) SignUp(w http.ResponseWriter, r *http.Request) {
@@ -48,13 +44,13 @@ func (h *Handlers) SignUp(w http.ResponseWriter, r *http.Request) {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	_, err := h.Pg.CreateUser(user.Login, user.Pass)
+	uuid, err := h.Pg.CreateUser(user.Login, user.Pass)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
 	j := jwt.JwtTokens{Env: h.Pg.Env}
-	if err = j.CreateTokens(user.Id, user.Login, ""); err != nil {
+	if err = j.CreateTokens(uuid, user.Login, ""); err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}

@@ -27,7 +27,7 @@ func (h Handlers) CheckJWT(next http.Handler) http.Handler {
 					return
 				}
 				j := jwt.JwtTokens{Env: h.Pg.Env}
-				if err = j.CreateTokens(user.Id, user.Login, ""); err != nil {
+				if err = j.CreateTokens(user.Uuid, user.Login, ""); err != nil {
 					writeErrorResponse(w, err, http.StatusBadRequest)
 					return
 				}

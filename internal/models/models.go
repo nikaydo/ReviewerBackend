@@ -5,14 +5,14 @@ import (
 )
 
 type User struct {
-	Id           int    `json:"id,omitempty" `
+	Uuid         string `json:"uuid,omitempty"`
 	Login        string `json:"login"`
-	Pass         string `json:"pass" `
+	Pass         string `json:"pass"`
 	RefreshToken string `json:"refresh,omitempty"`
 }
 
 type UserTab struct {
-	Id       string    `json:"id,omitempty"`
+	Uuid     string    `json:"uuid,omitempty"`
 	User     string    `json:"user"`
 	Request  string    `json:"request"`
 	Answer   string    `json:"answer"`
@@ -24,17 +24,24 @@ type UserTab struct {
 }
 
 type UserSettings struct {
-	Id       string `json:"id,omitempty"`
-	Username string `json:"username"`
-	Request  string `json:"request"`
-	Model    string `json:"model"`
+	Uuid      string  `json:"uuid,omitempty"`
+	Request   string  `json:"request"`
+	MainPromt *string `json:"mainpromt"`
+	Model     string  `json:"model"`
+}
+
+type CustomPromt struct {
+	Uuid     string `json:"uuid"`
+	UuidUser string `json:"uuidUser"`
+	Name     string `json:"name"`
+	Promt    string `json:"promt"`
 }
 
 type Title struct {
-	Id       string  `json:"id,omitempty"`
-	Request  *string `json:"request"`
-	Title    *string `json:"title"`
-	IdReview string  `json:"idreview"`
+	Uuid       string  `json:"uuid,omitempty"`
+	Request    *string `json:"request"`
+	Title      *string `json:"title"`
+	UuidReview string  `json:"uuidreview"`
 }
 
 type ResponseFromApi struct {

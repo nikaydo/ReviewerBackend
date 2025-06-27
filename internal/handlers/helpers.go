@@ -25,8 +25,7 @@ func writeJSONResponse(w http.ResponseWriter, data any, status int) {
 }
 
 func writeErrorResponse(w http.ResponseWriter, data error, status int) {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	log.Println(data)
+	w.Header().Set("Content-Type", "text/plain; charset=UTF-8")
 	w.WriteHeader(status)
 	_, err := w.Write([]byte(data.Error()))
 	if err != nil {
@@ -34,18 +33,18 @@ func writeErrorResponse(w http.ResponseWriter, data error, status int) {
 	}
 }
 
-func GetUsername(w http.ResponseWriter, r *http.Request, e config.Env) (int, string, error) {
+func GetUsername(w http.ResponseWriter, r *http.Request, e config.Env) (string, string, error) {
 	c, err := r.Cookie("jwt")
 	if err != nil {
 		writeErrorResponse(w, fmt.Errorf("Unauthorized"), http.StatusUnauthorized)
-		return 0, "", err
+		return "", "", err
 	}
-	id, username, err := jwt.ValidateToken(c.Value, e.EnvMap["SECRET"])
+	uuid, username, err := jwt.ValidateToken(c.Value, e.EnvMap["SECRET"])
 	if err != nil {
 		writeErrorResponse(w, fmt.Errorf("Unauthorized"), http.StatusUnauthorized)
-		return 0, "", err
+		return "", "", err
 	}
-	return id, username, nil
+	return uuid, username, nil
 }
 
 func MakeCookie(name, value string, t time.Duration) *http.Cookie {
@@ -53,7 +52,7 @@ func MakeCookie(name, value string, t time.Duration) *http.Cookie {
 		Name:     name,
 		Value:    value,
 		HttpOnly: true,
-		Secure:   true,
+		//Secure:   true,
 		SameSite: http.SameSiteStrictMode,
 		Path:     "/",
 		Expires:  time.Now().Add(t),
