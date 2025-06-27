@@ -65,15 +65,7 @@
       color: #D4D4D4;
       background-color: #1E1E1E;
     }
-    .prose pre {
-      background-color: #1E1E1E;
-      color: #E0E0E0;
-      padding: 1.5rem;
-      border-radius: 0.75rem;
-      overflow-x: auto;
-      font-size: 0.95rem;
-      line-height: 1.7;
-    }
+ 
     .prose code {
       background-color: #1E1E1E;
       color: #33aab9;
@@ -86,10 +78,7 @@
       padding: 0;
       color: inherit;
     }
-    .hljs {
-      background-color: #1E1E1E;
-      color: #E0E0E0;
-    }
+ 
     .hljs-keyword { color: #398a8d; }
     .hljs-string { color: #808080; }
     .hljs-comment { color: #6272A4; }
@@ -177,10 +166,11 @@
 }
 
 /* Стили для кнопок "Добавить в избранное" и "Удалить" */
+/* Стили для кнопок "Добавить в избранное" и "Удалить" (без изменений) */
 .favorite-btn, .delete-review-btn {
-  background-color: transparent; /* Прозрачный фон */
+  background-color: transparent;
   color: #E0E0E0;
-  border: none; /* Убираем границы */
+  border: none;
   border-radius: 0.5rem;
   padding: 0.5rem;
   transition: all 0.3s ease;
@@ -192,23 +182,22 @@
 }
 
 .favorite-btn:hover {
-  background: rgba(0, 160, 172, 0.2); /* Полупрозрачный фон при наведении */
+  background: rgba(0, 160, 172, 0.2);
   color: #fff;
   transform: translateY(-1px);
 }
 
 .delete-review-btn:hover {
-  background: rgba(168, 0, 0, 0.2); /* Полупрозрачный фон при наведении */
+  background: rgba(168, 0, 0, 0.2);
   color: #fff;
   transform: translateY(-1px);
 }
 
 .favorite-btn.active {
-  background: rgba(0, 128, 128, 0.3); /* Полупрозрачный фон для активного состояния */
+  background: rgba(0, 128, 128, 0.3);
   color: #fff;
 }
 
-/* Всплывающие подсказки */
 .favorite-btn:hover::after, .delete-review-btn:hover::after {
   content: attr(title);
   position: absolute;
@@ -224,15 +213,95 @@
   z-index: 10;
 }
 
-/* Пульсация при клике */
-.favorite-btn:active, .delete-review-btn:active {
-  animation: pulse 0.2s ease;
-}
+ 
 
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(0.95); }
   100% { transform: scale(1); }
+}
+
+/* Унифицированные стили для кнопок "Редактировать" */
+.toggle-edit-btn, .toggle-title-edit-btn {
+  background: linear-gradient(90deg, #008080, #006666);
+  color: #E0E0E0;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+
+.toggle-edit-btn:hover, .toggle-title-edit-btn:hover {
+  background: linear-gradient(90deg, #00a0ac, #008080);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.toggle-edit-btn:focus, .toggle-title-edit-btn:focus {
+  outline: 2px solid #2DD4BF;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.3);
+}
+
+/* Стили для кнопки "Отмена" */
+.cancel-edit-btn, .cancel-title-edit-btn {
+  background: transparent;
+  color: #008080;
+  border: 2px solid #008080;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+
+.cancel-edit-btn:hover, .cancel-title-edit-btn:hover {
+  background: #00808022;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.cancel-edit-btn:focus, .cancel-title-edit-btn:focus {
+  outline: 2px solid #2DD4BF;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.3);
+}
+
+/* Стили для кнопки "Копировать" */
+.copy-btn {
+  background-color: #2A2A2A;
+  color: #E0E0E0;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+.copy-btn:hover {
+  background: rgba(0, 128, 128, 0.2);
+  transform: translateY(-1px);
+}
+
+.copy-btn:focus {
+  outline: 2px solid #2DD4BF;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.3);
 }
 
 /* Адаптивность для мобильных устройств */
@@ -241,32 +310,24 @@
     font-size: 0.85rem;
     padding: 0.4rem 0.6rem;
   }
-  .favorite-btn, .delete-review-btn {
+  .favorite-btn, .delete-review-btn, .copy-btn {
     width: 1.75rem;
     height: 1.75rem;
     padding: 0.4rem;
   }
-  .favorite-btn svg, .delete-review-btn svg {
+  .favorite-btn svg, .delete-review-btn svg, .copy-btn svg {
     width: 0.9rem;
     height: 0.9rem;
   }
-}
-
-/* Доступность: фокус для кнопок */
-.favorite-btn:focus, .delete-review-btn:focus {
-  outline: 2px solid #2DD4BF;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.3);
+  .toggle-edit-btn, .toggle-title-edit-btn, .cancel-edit-btn, .cancel-title-edit-btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.8rem;
+  }
 }
 .favorite-btn:active, .delete-review-btn:active {
   animation: pulse 0.2s ease;
 }
 
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(0.95); }
-  100% { transform: scale(1); }
-}
     textarea, select, input[type="text"] {
       background-color: #1E1E1E;
       color: #E0E0E0;
@@ -463,18 +524,7 @@
       background-color: #006666;
       transform: translateY(-2px);
     }
-    .copy-btn {
-      background-color: #2A2A2A;
-      color: #E0E0E0;
-      border-radius: 0.5rem;
-      transition: all 0.3s ease;
-      padding: 0.5rem;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+ 
     .copy-btn:hover {
       background-color: #3A3A3A;
       transform: translateY(-1px);
@@ -1695,277 +1745,260 @@ document.querySelectorAll(".favorite-btn").forEach(btn => {
         throw err;
       }
     }
+function displayReview(index) {
+  const item = reviewsData[index];
+  let isEditing = false;
+  let isEditingTitle = false;
+  const container = document.getElementById("selected-review");
 
-    function displayReview(index) {
-      const item = reviewsData[index];
-      let isEditing = false;
-      let isEditingTitle = false;
-      const container = document.getElementById("selected-review");
-
-      function renderContent() {
-        container.innerHTML = `
-          <div class="space-y-6 transition-all duration-300">
-            <div class="flex justify-between items-center">
-              <div>
-                <h3 class="font-semibold text-xl text-[#E0E0E0]">Основной запрос</h3>
-                <p class="text-base text-[#E0E0E0] request-text">${item.request}</p>
-              </div>
-              <span class="text-sm text-[#E0E0E0] opacity-60">${formatDate(item.date)}</span>
+  function renderContent() {
+    container.innerHTML = `
+      <div class="space-y-6 transition-all duration-300">
+        <div class="flex justify-between items-center">
+          <div>
+            <h3 class="font-semibold text-xl text-[#E0E0E0]">Основной запрос</h3>
+            <p class="text-base text-[#E0E0E0] request-text">${item.request}</p>
+          </div>
+          <span class="text-sm text-[#E0E0E0] opacity-60">${formatDate(item.date)}</span>
+        </div>
+        <div class="relative">
+          <div class="response-container text-base text-[#E0E0E0] response-text ${isEditing ? '' : 'prose'} max-w-none">
+            ${isEditing ? `<textarea class="response-editor w-full p-4 rounded-lg resize-y min-h-[250px] text-base bg-[#2A2A2A]" style="color: #E0E0E0;">${item.answer || ""}</textarea>` : marked.parse(item.answer || "")}
+          </div>
+          <div class="flex items-center justify-between mt-2">
+            <div class="flex flex-col gap-1">
+              <div id="responseCharCount" class="text-xs text-gray-500">0 символов (с пробелами), 0 символов (без пробелов)</div>
             </div>
-            <div class="relative">
-              <div class="response-container text-base text-[#E0E0E0] response-text ${isEditing ? '' : 'prose'} max-w-none">
-                ${isEditing ? `<textarea class="response-editor w-full p-4 rounded-lg resize-y min-h-[250px] text-base bg-[#2A2A2A]" style="color: #E0E0E0;">${item.answer || ""}</textarea>` : marked.parse(item.answer || "")}
-              </div>
-              <div class="flex items-center justify-between mt-2">
-                <div class="flex flex-col gap-1">
-                  <div id="responseCharCount" class="text-xs text-gray-500">0 символов (с пробелами), 0 символов (без пробелов)</div>
-                </div>
-                <div class="flex gap-2">
-                  <button class="toggle-edit-btn btn-primary px-3 py-1 text-sm flex items-center gap-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isEditing ? 'M5 13l4 4L19 7' : 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'}"></path></svg>
-                    ${isEditing ? 'Сохранить' : 'Редактировать'}
-                  </button>
-                  <button class="cancel-edit-btn btn-secondary px-3 py-1 text-sm flex items-center gap-1 ${isEditing ? '' : 'hidden'}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    Отмена
-                  </button>
-                  <button class="copy-btn" onclick="copyToClipboard('response-container')" title="Копировать">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2M8 5V3a2 2 0 012-2h4a2 2 0 012 2v2M8 5h8"></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="flex gap-2 flex-wrap">
-              <button class="repeat-request-btn btn-primary px-4 py-2 rounded-lg text-base flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                Использовать запрос повторно
+            <div class="flex gap-2">
+              <button class="toggle-edit-btn btn-primary px-3 py-1 text-sm flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isEditing ? 'M5 13l4 4L19 7' : 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'}"></path></svg>
+                ${isEditing ? 'Сохранить' : 'Редактировать'}
               </button>
-            </div>
-            <hr class="my-4 border-[#2A2A2A]" />
-            <div class="space-y-2">
-              <label class="text-sm text-[#E0E0E0] font-medium">Задать вопрос по тексту:</label>
-              <div class="flex gap-2 items-start">
-                <div class="flex-1 relative">
-                  <textarea class="title-request-input w-full p-4 rounded-lg resize-y min-h-[60px] text-base bg-[#2A2A2A]" style="color: #E0E0E0;">${item.title?.request || item.request || ""}</textarea>
-                </div>
-                <button class="generate-title-btn btn-primary px-4 py-2 rounded-lg text-base flex items-center gap-2 h-fit">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                  Задать вопрос
-                </button>
-              </div>
-            </div>
-            <div class="space-y-2">
-              <label class="text-sm text-[#E0E0E0] font-medium">Ответ на вопрос:</label>
-              <div class="relative">
-                <div class="title-output-container text-base text-[#E0E0E0] ${isEditingTitle ? '' : 'prose'} max-w-none">
-                  ${isEditingTitle ? `<textarea class="title-output-editor w-full p-4 rounded-lg resize-y min-h-[60px] text-base bg-[#2A2A2A]" style="color: #E0E0E0;">${item.title?.title || ""}</textarea>` : marked.parse(item.title?.title || "")}
-                </div>
-                <div class="flex items-center justify-between mt-2">
-                  <div id="titleOutputCharCount" class="text-xs text-gray-500">0 символов</div>
-                  <div class="flex gap-3 items-start">
-                   <button class="toggle-title-edit-btn btn-primary px-3 py-1 text-sm flex items-center gap-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isEditingTitle ? 'M5 13l4 4L19 7' : 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'}"></path></svg>
-                ${isEditingTitle ? 'Сохранить' : 'Редактировать'}
-              </button>
-              <button class="cancel-title-edit-btn btn-secondary px-3 py-1 text-sm flex items-center gap-1 ${isEditingTitle ? '' : 'hidden'}">
+              <button class="cancel-edit-btn btn-secondary px-3 py-1 text-sm flex items-center gap-1 ${isEditing ? '' : 'hidden'}">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 Отмена
               </button>
-                  <button class="copy-btn" onclick="copyToClipboard('title-output-container')" title="Копировать">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2M8 5V3a2 2 0 012-2h4a2 2 0 012 2v2M8 5h8"></path>
-                    </svg>
-                  </button>
-                </div>
-                </div>
-              </div>
-            </div>
-            <div class="flex gap-2 flex-wrap">
-            </div>
-            <div id="saveIndicator" class="hidden mt-2 text-[#008080] text-base transition-all duration-300">Ответ сохранен</div>
-            <div class="stats-container bg-[#1E1E1E] p-4 rounded-lg space-y-3 text-sm text-[#E0E0E0]">
-              <div class="flex items-center gap-2">
-                <svg class="w-5 h-5 text-[#008080]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
-                <p><strong>Модель:</strong> ${item.model}</p>
-              </div>
-              ${item.think && item.think.trim() ? `<div class="flex items-start gap-2">
-                     <svg class="w-5 h-5 text-[#008080] mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707-.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707M12 14a5 5 0 01-5-5h10a5 5 0 01-5 5z"></path></svg>
-                     <div>
-                       <p><strong>Мысль:</strong></p>
-                       <span class="block mt-1 bg-[#121212] p-3 rounded-lg text-sm">${marked.parse(item.think)}</span>
-                     </div>
-                   </div>` : ''}
+              <button class="copy-btn" onclick="copyToClipboard('response-container')" title="Копировать">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2M8 5V3a2 2 0 012-2h4a2 2 0 012 2v2M8 5h8"></path>
+                </svg>
+              </button>
             </div>
           </div>
-        `;
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <button class="repeat-request-btn btn-primary px-4 py-2 rounded-lg text-base flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            Использовать запрос повторно
+          </button>
+        </div>
+        <hr class="my-4 border-[#2A2A2A]" />
+        <div class="space-y-2">
+          <label class="text-sm text-[#E0E0E0] font-medium">Задать вопрос по тексту:</label>
+          <div class="flex gap-2 items-start">
+            <div class="flex-1 relative">
+              <textarea class="title-request-input w-full p-4 rounded-lg resize-y min-h-[60px] text-base bg-[#2A2A2A]" style="color: #E0E0E0;">${item.title?.request || item.request || ""}</textarea>
+            </div>
+            <button class="generate-title-btn btn-primary px-4 py-2 rounded-lg text-base flex items-center gap-2 h-fit">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              Задать вопрос
+            </button>
+          </div>
+        </div>
+        <div class="space-y-2">
+          <label class="text-sm text-[#E0E0E0] font-medium">Ответ на вопрос:</label>
+          <div class="relative">
+            <div class="title-output-container text-base text-[#E0E0E0] ${isEditingTitle ? '' : 'prose'} max-w-none">
+              ${isEditingTitle ? `<textarea class="title-output-editor w-full p-4 rounded-lg resize-y min-h-[60px] text-base bg-[#2A2A2A]" style="color: #E0E0E0;">${item.title?.title || ""}</textarea>` : marked.parse(item.title?.title || "")}
+            </div>
+            <div class="flex items-center justify-between mt-2">
+              <div id="titleOutputCharCount" class="text-xs text-gray-500">0 символов</div>
+              <div class="flex gap-2 items-start">
+                <button class="toggle-title-edit-btn btn-primary px-3 py-1 text-sm flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isEditingTitle ? 'M5 13l4 4L19 7' : 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'}"></path></svg>
+                  ${isEditingTitle ? 'Сохранить' : 'Редактировать'}
+                </button>
+                <button class="cancel-title-edit-btn btn-secondary px-3 py-1 text-sm flex items-center gap-1 ${isEditingTitle ? '' : 'hidden'}">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  Отмена
+                </button>
+                <button class="copy-btn" onclick="copyToClipboard('title-output-container')" title="Копировать">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-2M8 5V3a2 2 0 012-2h4a2 2 0 012 2v2M8 5h8"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+        </div>
+        <div id="saveIndicator" class="hidden mt-2 text-[#008080] text-base transition-all duration-300">Ответ сохранен</div>
+        <div class="stats-container bg-[#1E1E1E] p-4 rounded-lg space-y-3 text-sm text-[#E0E0E0]">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-[#008080]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+            <p><strong>Модель:</strong> ${item.model}</p>
+          </div>
+          ${item.think && item.think.trim() ? `<div class="flex items-start gap-2">
+                 <svg class="w-5 h-5 text-[#008080] mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707-.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707M12 14a5 5 0 01-5-5h10a5 5 0 01-5 5z"></path></svg>
+                 <div>
+                   <p><strong>Мысль:</strong></p>
+                   <span class="block mt-1 bg-[#121212] p-3 rounded-lg text-sm">${marked.parse(item.think)}</span>
+                 </div>
+               </div>` : ''}
+        </div>
+      </div>
+    `;
 
-        const toggleEditBtn = container.querySelector(".toggle-edit-btn");
-        const cancelEditBtn = container.querySelector(".cancel-edit-btn");
-        const repeatBtn = container.querySelector(".repeat-request-btn");
-        const generateTitleBtn = container.querySelector(".generate-title-btn");
-        const toggleTitleEditBtn = container.querySelector(".toggle-title-edit-btn");
-        const cancelTitleEditBtn = container.querySelector(".cancel-title-edit-btn");
-        const statsText = container.querySelector(".stats-text");
-        const titleInput = container.querySelector(".title-request-input");
-        const titleOutputContainer = container.querySelector(".title-output-container");
+    const toggleEditBtn = container.querySelector(".toggle-edit-btn");
+    const cancelEditBtn = container.querySelector(".cancel-edit-btn");
+    const repeatBtn = container.querySelector(".repeat-request-btn");
+    const generateTitleBtn = container.querySelector(".generate-title-btn");
+    const toggleTitleEditBtn = container.querySelector(".toggle-title-edit-btn");
+    const cancelTitleEditBtn = container.querySelector(".cancel-title-edit-btn");
+    const titleInput = container.querySelector(".title-request-input");
+    const titleOutputContainer = container.querySelector(".title-output-container");
 
-        if (toggleEditBtn) {
-          toggleEditBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
-            if (isEditing) {
-              const editor = container.querySelector(".response-editor");
-              if (!editor) {
-                showNotification("Ошибка: поле редактирования не найдено.", true);
-                return;
-              }
-              const newText = editor.value.trim();
-              try {
-                await updateReviewText(item.uuid, newText);
-                const saveIndicator = container.querySelector("#saveIndicator");
-                saveIndicator.classList.remove("hidden");
-                setTimeout(() => saveIndicator.classList.add("hidden"), 2000);
-                statsText.innerHTML = `<strong>Статистика:</strong> ${getStats(newText)}`;
-              } catch (err) {
-                return;
-              }
-            }
-            isEditing = !isEditing;
-            renderContent();
-          });
-        }
-
-        if (cancelEditBtn) {
-          cancelEditBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            isEditing = false;
-            renderContent();
-          });
-        }
-
-        if (repeatBtn) {
-          repeatBtn.addEventListener("click", () => {
-            promptInput.value = item.request;
-            autoResizeTextarea(promptInput);
-            sections.create.classList.remove("hidden");
-            Object.keys(sections).forEach(key => {
-              if (key !== "create") sections[key].classList.add("hidden");
-            });
-            restoreCreateSection();
-            saveSettings();
-          });
-        }
-
-        if (generateTitleBtn && titleInput) {
-          generateTitleBtn.addEventListener("click", () => {
-            const req = titleInput.value.trim();
-            if (!req) {
-              showNotification("Введите вопрос по тексту", true);
-              return;
-            }
-            generateTitle(item.uuid, req);
-          });
-        }
-
-        if (toggleTitleEditBtn) {
-          toggleTitleEditBtn.addEventListener("click", async (e) => {
-            e.preventDefault();
-            if (isEditingTitle) {
-              const editor = container.querySelector(".title-output-editor");
-              if (!editor) {
-                showNotification("Ошибка: поле редактирования не найдено.", true);
-                return;
-              }
-              const newText = editor.value.trim();
-              try {
-                await saveTitle(item.uuid, newText);
-                const saveIndicator = container.querySelector("#saveIndicator");
-                saveIndicator.classList.remove("hidden");
-                setTimeout(() => saveIndicator.classList.add("hidden"), 2000);
-              } catch (err) {
-                return;
-              }
-            }
-            isEditingTitle = !isEditingTitle;
-            renderContent();
-          });
-        }
-
-        if (cancelTitleEditBtn) {
-          cancelTitleEditBtn.addEventListener("click", (e) => {
-            e.preventDefault();
-            isEditingTitle = false;
-            renderContent();
-          });
-        }
-
+    if (toggleEditBtn) {
+      toggleEditBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
         if (isEditing) {
           const editor = container.querySelector(".response-editor");
-          if (editor) {
-            autoResizeTextarea(editor);
-            updateResponseCharacterCount(editor.value);
-            editor.addEventListener("input", () => {
-              autoResizeTextarea(editor);
-              updateResponseCharacterCount(editor.value);
-            });
+          if (!editor) {
+            showNotification("Ошибка: поле редактирования не найдено.", true);
+            return;
           }
-        }
-
-        if (titleInput) {
-          autoResizeTextarea(titleInput);
-          updateCharacterCount(titleInput, 'titleRequestCharCount');
-          titleInput.addEventListener("input", () => {
-            autoResizeTextarea(titleInput);
-            updateCharacterCount(titleInput, 'titleRequestCharCount');
-          });
-        }
-
-        if (titleOutputContainer) {
-          const editor = container.querySelector(".title-output-editor");
-          if (editor) {
-            autoResizeTextarea(editor);
-            updateCharacterCount(editor, 'titleOutputCharCount');
-            editor.addEventListener("input", () => {
-              autoResizeTextarea(editor);
-              updateCharacterCount(editor, 'titleOutputCharCount');
-            });
-          } else {
-            // Update character count for the read-only content
-            const titleText = item.title?.title || "";
-            const counter = container.querySelector('#titleOutputCharCount');
-            if (counter) {
-              counter.textContent = `${titleText.length} символов`;
-            }
+          const newText = editor.value.trim();
+          try {
+            await updateReviewText(item.uuid, newText);
+            const saveIndicator = container.querySelector("#saveIndicator");
+            saveIndicator.classList.remove("hidden");
+            setTimeout(() => saveIndicator.classList.add("hidden"), 2000);
+            isEditing = false; // Reset editing state
+            renderContent(); // Re-render to show updated content
+          } catch (err) {
+            return;
           }
-        }
-      }
-      document.addEventListener('click', function(e) {
-        if (e.target.closest('.toggle-code')) {
-          const button = e.target.closest('.toggle-code');
-          const codeContainer = button.closest('.code-container');
-          const codeBlock = codeContainer.querySelector('pre');
-          codeBlock.style.display = codeBlock.style.display === 'none' ? 'block' : 'none';
-          button.querySelector('svg path').setAttribute('d', codeBlock.style.display === 'none' ? 'M5 5l7 7 7-7' : 'M5 15l7-7 7 7');
-        } else if (e.target.closest('.copy-code')) {
-          const button = e.target.closest('.copy-code');
-          const codeContainer = button.closest('.code-container');
-                  const code = codeContainer.querySelector('code').innerText;
-                  navigator.clipboard.writeText(code).then(() => {
-                    showNotification('Код скопирован в буфер обмена');
-                  }).catch(err => {
-                    console.error('Ошибка копирования:', err);
-                    showNotification('Не удалось скопировать код.', true);
-                  });
+        } else {
+          isEditing = true;
+          renderContent();
         }
       });
-      renderContent();
-      
-      // Update character count for response container after initial render
-      const responseText = item.answer || "";
-      updateResponseCharacterCount(responseText);
     }
-    
+
+    if (cancelEditBtn) {
+      cancelEditBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        isEditing = false;
+        renderContent();
+      });
+    }
+
+    if (repeatBtn) {
+      repeatBtn.addEventListener("click", () => {
+        promptInput.value = item.request;
+        autoResizeTextarea(promptInput);
+        sections.create.classList.remove("hidden");
+        Object.keys(sections).forEach(key => {
+          if (key !== "create") sections[key].classList.add("hidden");
+        });
+        restoreCreateSection();
+        saveSettings();
+      });
+    }
+
+    if (generateTitleBtn && titleInput) {
+      generateTitleBtn.addEventListener("click", () => {
+        const req = titleInput.value.trim();
+        if (!req) {
+          showNotification("Введите вопрос по тексту", true);
+          return;
+        }
+        generateTitle(item.uuid, req);
+      });
+    }
+
+    if (toggleTitleEditBtn) {
+      toggleTitleEditBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        if (isEditingTitle) {
+          const editor = container.querySelector(".title-output-editor");
+          if (!editor) {
+            showNotification("Ошибка: поле редактирования не найдено.", true);
+            return;
+          }
+          const newText = editor.value.trim();
+          try {
+            await saveTitle(item.uuid, newText);
+            const saveIndicator = container.querySelector("#saveIndicator");
+            saveIndicator.classList.remove("hidden");
+            setTimeout(() => saveIndicator.classList.add("hidden"), 2000);
+            isEditingTitle = false;
+            renderContent();
+          } catch (err) {
+            return;
+          }
+        } else {
+          isEditingTitle = true;
+          renderContent();
+        }
+      });
+    }
+
+    if (cancelTitleEditBtn) {
+      cancelTitleEditBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        isEditingTitle = false;
+        renderContent();
+      });
+    }
+
+    if (isEditing) {
+      const editor = container.querySelector(".response-editor");
+      if (editor) {
+        autoResizeTextarea(editor);
+        updateResponseCharacterCount(editor.value);
+        editor.addEventListener("input", () => {
+          autoResizeTextarea(editor);
+          updateResponseCharacterCount(editor.value);
+        });
+      }
+    }
+
+    if (titleInput) {
+      autoResizeTextarea(titleInput);
+      updateCharacterCount(titleInput, 'titleRequestCharCount');
+      titleInput.addEventListener("input", () => {
+        autoResizeTextarea(titleInput);
+        updateCharacterCount(titleInput, 'titleRequestCharCount');
+      });
+    }
+
+    if (titleOutputContainer) {
+      const editor = container.querySelector(".title-output-editor");
+      if (editor) {
+        autoResizeTextarea(editor);
+        updateCharacterCount(editor, 'titleOutputCharCount');
+        editor.addEventListener("input", () => {
+          autoResizeTextarea(editor);
+          updateCharacterCount(editor, 'titleOutputCharCount');
+        });
+      } else {
+        const titleText = item.title?.title || "";
+        const counter = container.querySelector('#titleOutputCharCount');
+        if (counter) {
+          counter.textContent = `${titleText.length} символов`;
+        }
+      }
+    }
+  }
+
+  renderContent();
+
+  // Update character count for response container after initial render
+  const responseText = item.answer || "";
+  updateResponseCharacterCount(responseText);
+}
     function updateResponseCharacterCount(text) {
       const counter = document.getElementById('responseCharCount');
       if (counter) {
@@ -2338,49 +2371,41 @@ function getSelectedPreset() {
     }
 
     // Copy to clipboard functionality
-    function copyToClipboard(elementId) {
-      const element = document.getElementById(elementId);
-      let textToCopy = '';
-      
-      if (element) {
-        if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
-          textToCopy = element.value;
-        } else {
-          textToCopy = element.textContent || element.innerText;
-        }
-      } else {
-        // Try to find by class if ID doesn't work
-        const elementByClass = document.querySelector('.' + elementId);
-        if (elementByClass) {
-          if (elementByClass.tagName === 'TEXTAREA' || elementByClass.tagName === 'INPUT') {
-            textToCopy = elementByClass.value;
-          } else {
-            textToCopy = elementByClass.textContent || elementByClass.innerText;
-          }
-        }
-      }
-      
-      if (textToCopy) {
-        navigator.clipboard.writeText(textToCopy).then(() => {
-          showNotification('Текст скопирован в буфер обмена');
-        }).catch(err => {
-          console.error('Ошибка копирования:', err);
-          showNotification('Не удалось скопировать текст.', true);
-        });
-      } else {
-        showNotification('Нет текста для копирования', true);
-      }
+function copyToClipboard(elementSelector) {
+  let textToCopy = '';
+  let element = document.getElementById(elementSelector);
+
+  if (!element) {
+    element = document.querySelector('.' + elementSelector);
+  }
+
+  if (element) {
+    if (element.tagName === 'TEXTAREA' || element.tagName === 'INPUT') {
+      textToCopy = element.value;
+    } else {
+      // For prose content, get the raw text, excluding HTML tags
+      textToCopy = element.innerText || element.textContent;
     }
+
+    if (textToCopy) {
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        showNotification('Текст скопирован в буфер обмена');
+      }).catch(err => {
+        console.error('Ошибка копирования:', err);
+        showNotification('Не удалось скопировать текст.', true);
+      });
+    } else {
+      showNotification('Нет текста для копирования', true);
+    }
+  } else {
+    showNotification('Элемент не найден', true);
+  }
+}
 
     // Setup character counters
     function setupCharacterCounters() {
       const promptInput = document.getElementById('promptInput');
-      if (promptInput) {
-        updateCharacterCount(promptInput, 'promptCharCount');
-        promptInput.addEventListener('input', () => {
-          updateCharacterCount(promptInput, 'promptCharCount');
-        });
-      }
+
       
       // Character counters for dynamically created elements will be handled in displayReview
     }
