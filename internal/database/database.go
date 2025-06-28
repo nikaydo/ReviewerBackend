@@ -32,10 +32,8 @@ func RunMigrations(e config.Env) {
 	if err != nil {
 		log.Fatal("ошибка инициализации миграций:", err)
 	}
-
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatal("ошибка применения миграций:", err)
 	}
-
 	log.Println("миграции успешно применены")
 }

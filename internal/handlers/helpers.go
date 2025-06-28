@@ -8,6 +8,8 @@ import (
 	"main/internal/jwt"
 	"net/http"
 	"time"
+
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 func writeJSONResponse(w http.ResponseWriter, data any, status int) {
@@ -58,4 +60,22 @@ func MakeCookie(name, value string, t time.Duration) *http.Cookie {
 		Expires:  time.Now().Add(t),
 		MaxAge:   int(t.Seconds()),
 	}
+}
+
+func FindChange(originalText, changedText string) string {
+	dmp := diffmatchpatch.New()
+	diffs := dmp.DiffMain(originalText, changedText, false)
+	var additions string
+	for _, diff := range diffs {
+		if diff.Type == diffmatchpatch.DiffInsert {
+			additions += "| " + diff.Text
+		}
+	}
+	return additions
+}
+
+func makePrompt(main, mem, preset string) string {
+	glueForPreset := " важно что бы твой ответ соответствовал этим критериям: " + preset
+	glueForMem := " используй эту инвормацию для написания как информацию что бы сделать отзыв более подходящим под критерии " + mem
+	return main + glueForMem + glueForPreset
 }

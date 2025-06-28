@@ -25,28 +25,29 @@ func (rt *Router) Router() http.Handler {
 	r.Use(middleware.Recoverer)
 	r.Route("/user", func(r chi.Router) {
 		r.Use(rt.Handlers.CheckJWT)
-		r.Route("/setting", func(r chi.Router) {
-			r.Get("/get", rt.Handlers.GetSettings)
-			r.Get("/save", rt.Handlers.SaveSettings)
-			r.Post("/update", rt.Handlers.UpdateSettings)
+		r.Route("/settings", func(r chi.Router) {
+			r.Get("/", rt.Handlers.Settings)
+			r.Put("/", rt.Handlers.Settings)
 		})
 		r.Route("/review", func(r chi.Router) {
-			r.Route("/title", func(r chi.Router) {
-				r.Post("/add", rt.Handlers.ReviewGenTitle)
-				r.Post("/update", rt.Handlers.ReviewTitleUpdate)
+			r.Route("/ask", func(r chi.Router) {
+				r.Post("/", rt.Handlers.Ask)
+				r.Put("/", rt.Handlers.Ask)
 			})
-			r.Post("/mainpromt", rt.Handlers.ReviewTitleUpdateMainPromt)
-			r.Get("/get", rt.Handlers.ReviewGet)
-			r.Post("/delete", rt.Handlers.ReviewDelete)
-			r.Post("/add", rt.Handlers.ReviewAdd)
-			r.Post("/update", rt.Handlers.ReviewUpdate)
-			r.Post("/favorite/set", rt.Handlers.Favorite)
+			r.Post("/mainpromt", rt.Handlers.MainPrompt)
+			r.Get("/", rt.Handlers.Review)
+			r.Delete("/", rt.Handlers.Review)
+			r.Post("/", rt.Handlers.Review)
+			r.Put("/", rt.Handlers.Review)
+			r.Post("/favorite", rt.Handlers.Favorite)
+			r.Get("/brain", rt.Handlers.Memory)
+			r.Post("/brain", rt.Handlers.Memory)
 		})
 		r.Route("/custom", func(r chi.Router) {
-			r.Post("/add", rt.Handlers.ReviewCustomPromtAdd)
-			r.Get("/get", rt.Handlers.ReviewCustomPromtGet)
-			r.Post("/del", rt.Handlers.ReviewCustomPromtDel)
-			r.Post("/update", rt.Handlers.ReviewCustomPromtUpdate)
+			r.Post("/", rt.Handlers.Custom)
+			r.Get("/", rt.Handlers.Custom)
+			r.Delete("/", rt.Handlers.Custom)
+			r.Put("/", rt.Handlers.Custom)
 		})
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, "./web/user.html")

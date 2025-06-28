@@ -6,8 +6,7 @@ import (
 )
 
 /*
-Получение настроек пользователя по нику
-Возвращяет структуру UserSettings со значениями Id, Username, Request, Model
+Получение настроек пользователя по нику. Возвращяет структуру UserSettings со значениями uuid, mainPromt, Request, Model
 */
 func (d *Database) GetSettings(uuid string) (models.UserSettings, error) {
 	rows := d.Pg.QueryRow(context.Background(), "SELECT * from "+d.Env.EnvMap["DB_USER_SETTING"]+" where uuid = $1", uuid)
@@ -19,8 +18,7 @@ func (d *Database) GetSettings(uuid string) (models.UserSettings, error) {
 }
 
 /*
-Добавление настроек пользователя в базу данных
-Добавляет username, request, model
+Добавление настроек пользователя в базу данных. Добавляет uuid, request, model
 */
 func (d *Database) SaveSettings(uuid, request, model string) error {
 	_, err := d.Pg.Exec(context.Background(), "INSERT INTO "+d.Env.EnvMap["DB_USER_SETTING"]+" (uuid, request, model) VALUES ($1, $2, $3)", uuid, request, model)
@@ -31,8 +29,7 @@ func (d *Database) SaveSettings(uuid, request, model string) error {
 }
 
 /*
-Обнолвние настроек пользователя
-Проверка по нику и добавление request, model
+Обнолвние настроек пользователя. Проверка по uuid пользователя и добавление request, model
 */
 func (d *Database) UpdateSettings(uuid, request, model string) error {
 	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_USER_SETTING"]+" SET request = $1, model = $2 WHERE uuid = $3", request, model, uuid)
@@ -42,6 +39,9 @@ func (d *Database) UpdateSettings(uuid, request, model string) error {
 	return nil
 }
 
+/*
+Обновление основного промта. Принимает сам промт mainPromt и uuid пользователя
+*/
 func (d *Database) ReviewTitleUpdatePromt(mainPromt, uuid string) error {
 	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_USER_SETTING"]+" SET mainPromt = $1 WHERE uuid = $2;", mainPromt, uuid)
 	if err != nil {

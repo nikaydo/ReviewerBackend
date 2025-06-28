@@ -26,7 +26,7 @@ func (d *Database) ReviewFavorite(uuid, favorite, uuidUniq string) error {
 	if favorite == "true" {
 		f = true
 	}
-	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_REVIEW"]+" SET favorite = $1 WHERE uuid = $2 AND uuid = $3", f, uuid, uuidUniq)
+	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_REVIEW"]+" SET favorite = $1 WHERE uuid = $2 AND uuidUniq = $3", f, uuid, uuidUniq)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (d *Database) ReviewGet(uuid string) ([]models.UserTab, error) {
 
 	rows, err := tx.Query(ctx, `
 		SELECT
-			rt.uuid,
+			rt.uuidUniq,
 			rt.uuid,
 			rt.request,
 			rt.answer,
@@ -127,66 +127,6 @@ func (d *Database) ReviewGetOne(user_uuid, uuid string) (models.UserTab, error) 
 
 func (d *Database) ReviewDelete(user_uuid, uuid string) error {
 	_, err := d.Pg.Exec(context.Background(), "DELETE FROM "+d.Env.EnvMap["DB_REVIEW"]+" WHERE uuid = $1 AND uuid = $2", user_uuid, uuid)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-//title response
-
-func (d *Database) ReviewTitleAdd(uuidReview, title, request string) error {
-	_, err := d.Pg.Exec(context.Background(), `
-		INSERT INTO `+d.Env.EnvMap["DB_REVIEW_ASK"]+` (uuidReview, title, request)
-		VALUES ($1, $2, $3)
-		ON CONFLICT (uuidReview) DO UPDATE
-		SET title = EXCLUDED.title,
-		    request = EXCLUDED.request
-	`, uuidReview, title, request)
-	return err
-}
-
-func (d *Database) ReviewTitleUpdate(title, uuid string) error {
-	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_REVIEW_ASK"]+" SET title = $1 WHERE uuidReview = $2", title, uuid)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// User promt
-func (d *Database) CustomPromtAdd(uuidUser, name, promt string) error {
-	_, err := d.Pg.Exec(context.Background(), "INSERT INTO "+d.Env.EnvMap["DB_USER_PROMT"]+" (uuidUser,name,promt) VALUES ($1,$2,$3)", uuidUser, name, promt)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *Database) CustomPromtUpdate(uuid, name, promt string) error {
-	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_USER_PROMT"]+" SET (name,promt) = ($1,$2) WHERE uuidUniq = $3", name, promt, uuid)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (d *Database) CustomPromtGet(uuidUser string) ([]models.CustomPromt, error) {
-	rows, err := d.Pg.Query(context.Background(), "SELECT * FROM "+d.Env.EnvMap["DB_USER_PROMT"]+" WHERE uuidUser = $1", uuidUser)
-	if err != nil {
-		return nil, err
-	}
-	var ls []models.CustomPromt
-	for rows.Next() {
-		var c models.CustomPromt
-		rows.Scan(&c.UuidUser, &c.Uuid, &c.Name, &c.Promt)
-		ls = append(ls, c)
-	}
-	return ls, nil
-}
-
-func (d *Database) CustomPromtDel(uuid string) error {
-	_, err := d.Pg.Exec(context.Background(), "DELETE FROM "+d.Env.EnvMap["DB_USER_PROMT"]+" WHERE uuidUniq = $1", uuid)
 	if err != nil {
 		return err
 	}

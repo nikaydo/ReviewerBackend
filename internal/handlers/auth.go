@@ -20,20 +20,11 @@ func (h *Handlers) SignIn(w http.ResponseWriter, r *http.Request) {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	j := jwt.JwtTokens{Env: h.Pg.Env}
-	if err = j.CreateTokens(u.Uuid, u.Login, ""); err != nil {
-		writeErrorResponse(w, err, http.StatusBadRequest)
-		return
-	}
-	if err = h.Pg.UpdateUser(u.Login, j.RefreshToken); err != nil {
-		writeErrorResponse(w, err, http.StatusBadRequest)
-		return
-	}
-	cockie, err := strconv.Atoi(h.Pg.Env.EnvMap["COCKIE_TTL"])
+	err = tokensAndCookie(w, h, user, u.Uuid)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
 	}
-	http.SetCookie(w, MakeCookie("jwt", j.AccessToken, time.Duration(time.Duration(cockie)*time.Minute)))
 	w.WriteHeader(http.StatusOK)
 
 }
@@ -49,25 +40,27 @@ func (h *Handlers) SignUp(w http.ResponseWriter, r *http.Request) {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	j := jwt.JwtTokens{Env: h.Pg.Env}
-	if err = j.CreateTokens(uuid, user.Login, ""); err != nil {
+	err = tokensAndCookie(w, h, user, uuid)
+	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	if err = h.Pg.UpdateUser(user.Login, j.RefreshToken); err != nil {
+	w.WriteHeader(http.StatusCreated)
+}
+
+func tokensAndCookie(w http.ResponseWriter, h *Handlers, user models.User, uuid string) error {
+	j := jwt.JwtTokens{Env: h.Pg.Env}
+	if err := j.CreateTokens(uuid, user.Login, ""); err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
-		return
+		return err
+	}
+	if err := h.Pg.UpdateUser(user.Login, j.RefreshToken); err != nil {
+		return err
 	}
 	cockie, err := strconv.Atoi(h.Pg.Env.EnvMap["COCKIE_TTL"])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	http.SetCookie(w, MakeCookie("jwt", j.AccessToken, time.Duration(time.Duration(cockie)*time.Minute)))
-	w.WriteHeader(http.StatusOK)
-	_, err = w.Write([]byte(j.AccessToken))
-	if err != nil {
-		writeErrorResponse(w, err, http.StatusBadRequest)
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
+	return nil
 }
