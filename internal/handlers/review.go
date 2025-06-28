@@ -6,12 +6,12 @@ import (
 )
 
 func (h *Handlers) ReviewGet(w http.ResponseWriter, r *http.Request) {
-	_, username, err := GetUsername(w, r, h.Pg.Env)
+	uuid_user, _, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	us, err := h.Pg.ReviewGet(username)
+	us, err := h.Pg.ReviewGet(uuid_user)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
@@ -22,24 +22,24 @@ func (h *Handlers) ReviewGet(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) ReviewUpdate(w http.ResponseWriter, r *http.Request) {
 	uuid := r.FormValue("uuid")
 	text := r.FormValue("text")
-	_, username, err := GetUsername(w, r, h.Pg.Env)
+	uuid_user, _, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	h.Pg.UpdateReview(username, text, uuid)
+	h.Pg.UpdateReview(uuid_user, text, uuid)
 	w.WriteHeader(http.StatusOK)
 }
 
 func (h *Handlers) Favorite(w http.ResponseWriter, r *http.Request) {
 	uuid := r.FormValue("uuid")
 	favorite := r.FormValue("favorite")
-	_, username, err := GetUsername(w, r, h.Pg.Env)
+	uuid_user, _, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	if err := h.Pg.ReviewFavorite(username, favorite, uuid); err != nil {
+	if err := h.Pg.ReviewFavorite(uuid_user, favorite, uuid); err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
@@ -50,12 +50,12 @@ func (h *Handlers) ReviewAdd(w http.ResponseWriter, r *http.Request) {
 	request := r.FormValue("request")
 	model := r.FormValue("model")
 	up := r.FormValue("userpreset")
-	uuid, username, err := GetUsername(w, r, h.Pg.Env)
+	uuid_user, _, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	mainPromt, preset, err := h.Pg.ReviewSum(uuid, up)
+	mainPromt, preset, err := h.Pg.ReviewSum(uuid_user, up)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
@@ -65,7 +65,7 @@ func (h *Handlers) ReviewAdd(w http.ResponseWriter, r *http.Request) {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	err = h.Pg.ReviewAdd(username, request, answer.Response, answer.Think, model)
+	err = h.Pg.ReviewAdd(uuid_user, request, answer.Response, answer.Think, model)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
@@ -75,12 +75,12 @@ func (h *Handlers) ReviewAdd(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) ReviewDelete(w http.ResponseWriter, r *http.Request) {
 	uuid := r.FormValue("uuid")
-	_, username, err := GetUsername(w, r, h.Pg.Env)
+	uuid_user, _, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	if err := h.Pg.ReviewDelete(username, uuid); err != nil {
+	if err := h.Pg.ReviewDelete(uuid_user, uuid); err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
@@ -91,12 +91,12 @@ func (h *Handlers) ReviewDelete(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) ReviewGenTitle(w http.ResponseWriter, r *http.Request) {
 	request := r.FormValue("request")
 	uuid := r.FormValue("uuid")
-	_, username, err := GetUsername(w, r, h.Pg.Env)
+	uuid_user, _, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	tab, err := h.Pg.ReviewGetOne(username, uuid)
+	tab, err := h.Pg.ReviewGetOne(uuid_user, uuid)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
@@ -125,12 +125,12 @@ func (h *Handlers) ReviewTitleUpdate(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) ReviewTitleUpdateMainPromt(w http.ResponseWriter, r *http.Request) {
 	text := r.FormValue("text")
-	uuid, _, err := GetUsername(w, r, h.Pg.Env)
+	uuid_user, _, err := GetUsername(w, r, h.Pg.Env)
 	if err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}
-	if err := h.Pg.ReviewTitleUpdatePromt(text, uuid); err != nil {
+	if err := h.Pg.ReviewTitleUpdatePromt(text, uuid_user); err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)
 		return
 	}

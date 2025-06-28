@@ -15,32 +15,37 @@ type ResponseFromAI struct {
 	Think    string `json:"think"`
 }
 
-func Generate(model, api, reqv, sysPromt, assistPromt string, sys, assist bool) (ResponseFromAI, error) {
-	var R ResponseFromAI
-	url := "https://api.mistral.ai/v1/chat/completions"
-	user := []map[string]string{{
-		"role":    "user",
-		"content": reqv,
-	}}
+func appendMsg(msg []map[string]string, role, content string) []map[string]string {
+	return append(msg, []map[string]string{{
+		"role":    role,
+		"content": content,
+	}}...)
+}
+
+func makeResponse(model, reqv, sysPromt, assistPromt string, sys, assist bool) ([]byte, error) {
 	var msg []map[string]string
 	if sys {
-		msg = append(msg, []map[string]string{{
-			"role":    "system",
-			"content": sysPromt,
-		}}...)
+		msg = appendMsg(msg, "system", sysPromt)
 	}
 	if assist {
-		msg = append(msg, []map[string]string{{
-			"role":    "assistant",
-			"content": assistPromt,
-		}}...)
+		msg = appendMsg(msg, "assistant", assistPromt)
 	}
-	msg = append(msg, user...)
+	msg = appendMsg(msg, "user", reqv)
 	payload := map[string]any{
 		"model":    model,
 		"messages": msg,
 	}
 	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return []byte{}, err
+	}
+	return jsonData, nil
+}
+
+func Generate(model, api, reqv, sysPromt, assistPromt string, sys, assist bool) (ResponseFromAI, error) {
+	var R ResponseFromAI
+	url := "https://api.mistral.ai/v1/chat/completions"
+	jsonData, err := makeResponse(model, reqv, sysPromt, assistPromt, sys, assist)
 	if err != nil {
 		return R, err
 	}
@@ -51,7 +56,6 @@ func Generate(model, api, reqv, sysPromt, assistPromt string, sys, assist bool) 
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 	req.Header.Set("Authorization", "Bearer "+api)
-
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return R, err
@@ -66,7 +70,7 @@ func Generate(model, api, reqv, sysPromt, assistPromt string, sys, assist bool) 
 	}
 
 	if model == "magistral-medium-2506" {
-		R, err := GenWithThink(response)
+		R, err := genWithThink(response)
 		if err != nil {
 			return R, err
 		}
@@ -76,7 +80,7 @@ func Generate(model, api, reqv, sysPromt, assistPromt string, sys, assist bool) 
 	return R, nil
 }
 
-func GenWithThink(response models.ResponseFromApi) (ResponseFromAI, error) {
+func genWithThink(response models.ResponseFromApi) (ResponseFromAI, error) {
 	var R ResponseFromAI
 	if len(response.Choices) == 0 {
 		return R, fmt.Errorf("empty response")

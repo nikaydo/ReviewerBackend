@@ -1,0 +1,14 @@
+version: '3'
+
+tasks:
+  build:
+    desc: "Собрать проект"
+    cmds:
+      - go build -o reviewApp cmd/main.go
+
+  migr:
+    desc: "Сделать миграцию"
+    cmds:
+      - |
+        read -p "Введите название миграции: " name && \
+        migrate create -ext sql -dir db/migrations "$name"

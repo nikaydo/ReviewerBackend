@@ -7,26 +7,26 @@ import (
 	"time"
 )
 
-func (d *Database) ReviewAdd(user, request, answer, think, model string) error {
+func (d *Database) ReviewAdd(uuid, request, answer, think, model string) error {
 	_, err := d.Pg.Exec(context.Background(), `
 		INSERT INTO 
 		`+d.Env.EnvMap["DB_REVIEW"]+` 
-		(username, request,answer,think,date,model,favorite) 
+		(uuid, request,answer,think,date,model,favorite) 
 		VALUES 
 		($1, $2, $3, $4, $5, $6, $7)
-		`, user, request, answer, think, time.Now(), model, false)
+		`, uuid, request, answer, think, time.Now(), model, false)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *Database) ReviewFavorite(username, favorite, uuid string) error {
+func (d *Database) ReviewFavorite(uuid, favorite, uuidUniq string) error {
 	f := false
 	if favorite == "true" {
 		f = true
 	}
-	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_REVIEW"]+" SET favorite = $1 WHERE username = $2 AND uuid = $3", f, username, uuid)
+	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_REVIEW"]+" SET favorite = $1 WHERE uuid = $2 AND uuid = $3", f, uuid, uuidUniq)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func (d *Database) ReviewSum(uuid, uuidUniq string) (string, string, error) {
 	return mainPromt, customPromt, nil
 }
 
-func (d *Database) ReviewGet(user string) ([]models.UserTab, error) {
+func (d *Database) ReviewGet(uuid string) ([]models.UserTab, error) {
 	ctx := context.Background()
 
 	tx, err := d.Pg.Begin(ctx)
@@ -64,7 +64,7 @@ func (d *Database) ReviewGet(user string) ([]models.UserTab, error) {
 	rows, err := tx.Query(ctx, `
 		SELECT
 			rt.uuid,
-			rt.username,
+			rt.uuid,
 			rt.request,
 			rt.answer,
 			rt.think,
@@ -75,8 +75,8 @@ func (d *Database) ReviewGet(user string) ([]models.UserTab, error) {
 			rtitle.request AS title_request
 		FROM `+d.Env.EnvMap["DB_REVIEW"]+`  rt
 		LEFT JOIN `+d.Env.EnvMap["DB_REVIEW_ASK"]+` rtitle ON rtitle.uuidReview = rt.uuid
-		WHERE rt.username = $1;
-	`, user)
+		WHERE rt.uuid = $1;
+	`, uuid)
 	if err != nil {
 		return nil, err
 	}
@@ -108,16 +108,16 @@ func (d *Database) ReviewGet(user string) ([]models.UserTab, error) {
 	return ls, nil
 }
 
-func (d *Database) UpdateReview(username, r, uuid string) error {
-	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_REVIEW"]+" SET answer = $1 WHERE username = $2 AND uuid = $3", r, username, uuid)
+func (d *Database) UpdateReview(user_uuid, r, uuid string) error {
+	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_REVIEW"]+" SET answer = $1 WHERE uuid = $2 AND uuid = $3", r, user_uuid, uuid)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *Database) ReviewGetOne(user, uuid string) (models.UserTab, error) {
-	rows := d.Pg.QueryRow(context.Background(), "SELECT uuid,request,answer,think,date,model,favorite FROM "+d.Env.EnvMap["DB_REVIEW"]+" WHERE username = $1 AND uuid = $2", user, uuid)
+func (d *Database) ReviewGetOne(user_uuid, uuid string) (models.UserTab, error) {
+	rows := d.Pg.QueryRow(context.Background(), "SELECT uuid,request,answer,think,date,model,favorite FROM "+d.Env.EnvMap["DB_REVIEW"]+" WHERE uuid = $1 AND uuid = $2", user_uuid, uuid)
 	var u models.UserTab
 	if err := rows.Scan(&u.Uuid, &u.Request, &u.Answer, &u.Think, &u.Date, &u.Model, &u.Favorite); err != nil {
 		return u, err
@@ -125,8 +125,8 @@ func (d *Database) ReviewGetOne(user, uuid string) (models.UserTab, error) {
 	return u, nil
 }
 
-func (d *Database) ReviewDelete(user, uuid string) error {
-	_, err := d.Pg.Exec(context.Background(), "DELETE FROM "+d.Env.EnvMap["DB_REVIEW"]+" WHERE username = $1 AND uuid = $2", user, uuid)
+func (d *Database) ReviewDelete(user_uuid, uuid string) error {
+	_, err := d.Pg.Exec(context.Background(), "DELETE FROM "+d.Env.EnvMap["DB_REVIEW"]+" WHERE uuid = $1 AND uuid = $2", user_uuid, uuid)
 	if err != nil {
 		return err
 	}

@@ -14,6 +14,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file:", err)
 	}
+	database.RunMigrations(env)
 	pg := database.InitBD(env)
 	server := server.ServerInit(pg, env)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {

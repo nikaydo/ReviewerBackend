@@ -1605,7 +1605,6 @@ favoriteListContainer.innerHTML = favoriteReviews.length === 0
                           listItem.classList.add("opacity-0", "scale-95");
                           setTimeout(() => {
                             listItem.remove();
-                            loadReviewList();
                           }, 300);
                         } catch (err) {
                           console.error("Ошибка удаления:", err);
