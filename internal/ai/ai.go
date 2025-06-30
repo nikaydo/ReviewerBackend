@@ -76,7 +76,11 @@ func Generate(model, api, reqv, sysPromt, assistPromt string, sys, assist bool) 
 		}
 		return R, nil
 	}
-	R.Response = response.Choices[0].Message.Content
+	if len(response.Choices) > 0 {
+		R.Response = response.Choices[0].Message.Content
+	} else {
+		R.Response = "Либо ии не смог овтетить на вашь вопрос либо произошла ошибка в любом случае просто повторите запрос"
+	}
 	return R, nil
 }
 
