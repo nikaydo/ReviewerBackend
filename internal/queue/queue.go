@@ -1,6 +1,7 @@
 package queue
 
 import (
+	"fmt"
 	"log"
 	"main/internal/ai"
 	"main/internal/config"
@@ -34,6 +35,7 @@ func RunQueue(q *models.List, e config.Env, pg database.Database) {
 			wg.Add(1)
 			go func(req models.Enquiry) {
 				defer wg.Done()
+				fmt.Println(req.System)
 				answer, err := ai.Generate(
 					req.Model,
 					e.EnvMap["MISTRAL_API_KEY"],

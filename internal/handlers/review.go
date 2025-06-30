@@ -58,6 +58,7 @@ func (h *Handlers) Review(w http.ResponseWriter, r *http.Request) {
 		if *u.Memory {
 			syst = makePrompt(mainPromt, mem, preset)
 		}
+		syst = makePrompt(mainPromt, "", preset)
 		queue.AddInQueue(h.Queue, models.Enquiry{
 			QueryUuid:   r,
 			Uuid:        uuid_user,
