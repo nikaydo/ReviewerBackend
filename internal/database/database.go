@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"main/internal/config"
 
@@ -24,16 +25,27 @@ func InitBD(e config.Env) Database {
 	return Database{Pg: conn, Env: e}
 }
 
-func RunMigrations(e config.Env) {
+func RunMigrations(e config.Env) error {
 	m, err := migrate.New(
 		"file://db/migrations",
 		e.EnvMap["POSTGRESS_ADDR"],
 	)
 	if err != nil {
-		log.Fatal("ошибка инициализации миграций:", err)
+		return fmt.Errorf("ошибка инициализации миграций: %w", err)
 	}
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatal("ошибка применения миграций:", err)
+	defer func() {
+		sourceErr, dbErr := m.Close()
+		if sourceErr != nil || dbErr != nil {
+			log.Printf("ошибка закрытия миграций: sourceErr=%v, dbErr=%v", sourceErr, dbErr)
+		}
+	}()
+
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+
+		return fmt.Errorf("ошибка применения миграций: %w", err)
 	}
+
 	log.Println("миграции успешно применены")
+	return nil
 }

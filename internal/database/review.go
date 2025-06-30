@@ -39,7 +39,6 @@ func (d *Database) ReviewSum(uuid, uuidUniq string) (string, string, error) {
 	err := d.Pg.QueryRow(context.Background(), `SELECT mainPromt FROM `+d.Env.EnvMap["DB_USER_SETTING"]+` WHERE uuid = $1`, uuid).Scan(&mainPromt)
 	if err != nil {
 		return "", "", err
-
 	}
 	err = d.Pg.QueryRow(context.Background(), `SELECT promt FROM `+d.Env.EnvMap["DB_USER_PROMT"]+` WHERE uuidUniq = $1`, uuidUniq).Scan(&customPromt)
 	if err != sql.ErrNoRows {
@@ -74,7 +73,7 @@ func (d *Database) ReviewGet(uuid string) ([]models.UserTab, error) {
 			rtitle.title,
 			rtitle.request AS title_request
 		FROM `+d.Env.EnvMap["DB_REVIEW"]+`  rt
-		LEFT JOIN `+d.Env.EnvMap["DB_REVIEW_ASK"]+` rtitle ON rtitle.uuidReview = rt.uuid
+		LEFT JOIN `+d.Env.EnvMap["DB_REVIEW_ASK"]+` rtitle ON rtitle.uuidReview = rt.uuidUniq
 		WHERE rt.uuid = $1;
 	`, uuid)
 	if err != nil {
@@ -109,7 +108,7 @@ func (d *Database) ReviewGet(uuid string) ([]models.UserTab, error) {
 }
 
 func (d *Database) UpdateReview(user_uuid, r, uuid string) error {
-	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_REVIEW"]+" SET answer = $1 WHERE uuid = $2 AND uuid = $3", r, user_uuid, uuid)
+	_, err := d.Pg.Exec(context.Background(), "UPDATE "+d.Env.EnvMap["DB_REVIEW"]+" SET answer = $1 WHERE uuid = $2 AND uuidUniq = $3", r, user_uuid, uuid)
 	if err != nil {
 		return err
 	}
@@ -117,7 +116,7 @@ func (d *Database) UpdateReview(user_uuid, r, uuid string) error {
 }
 
 func (d *Database) ReviewGetOne(user_uuid, uuid string) (models.UserTab, error) {
-	rows := d.Pg.QueryRow(context.Background(), "SELECT uuid,request,answer,think,date,model,favorite FROM "+d.Env.EnvMap["DB_REVIEW"]+" WHERE uuid = $1 AND uuid = $2", user_uuid, uuid)
+	rows := d.Pg.QueryRow(context.Background(), "SELECT uuid,request,answer,think,date,model,favorite FROM "+d.Env.EnvMap["DB_REVIEW"]+" WHERE uuid = $1 AND uuidUniq = $2", user_uuid, uuid)
 	var u models.UserTab
 	if err := rows.Scan(&u.Uuid, &u.Request, &u.Answer, &u.Think, &u.Date, &u.Model, &u.Favorite); err != nil {
 		return u, err
@@ -126,7 +125,7 @@ func (d *Database) ReviewGetOne(user_uuid, uuid string) (models.UserTab, error) 
 }
 
 func (d *Database) ReviewDelete(user_uuid, uuid string) error {
-	_, err := d.Pg.Exec(context.Background(), "DELETE FROM "+d.Env.EnvMap["DB_REVIEW"]+" WHERE uuid = $1 AND uuid = $2", user_uuid, uuid)
+	_, err := d.Pg.Exec(context.Background(), "DELETE FROM "+d.Env.EnvMap["DB_REVIEW"]+" WHERE uuid = $1 AND uuidUniq = $2", user_uuid, uuid)
 	if err != nil {
 		return err
 	}

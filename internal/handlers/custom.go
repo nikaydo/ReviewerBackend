@@ -42,3 +42,12 @@ func (h *Handlers) Custom(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 }
+
+func (h *Handlers) CustomD(w http.ResponseWriter, r *http.Request) {
+	uuid := r.URL.Query().Get("uuid")
+	if err := h.Pg.CustomPromtDel(uuid); err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}

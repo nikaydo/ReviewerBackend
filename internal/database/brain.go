@@ -12,8 +12,8 @@ func (d *Database) Remember(uuid, text string) error {
 	return nil
 }
 
-func (d *Database) KeepInMind(text, uuid string) error {
-	_, err := d.Pg.Exec(context.Background(), "Update "+d.Env.EnvMap["DB_USER_BRAIN"]+" SET memory = $1 WHERE uuid =  $2", uuid, text)
+func (d *Database) KeepInMind(uuid, text string) error {
+	_, err := d.Pg.Exec(context.Background(), "Update "+d.Env.EnvMap["DB_USER_BRAIN"]+" SET memory = $1 WHERE uuid =  $2", text, uuid)
 	if err != nil {
 		return err
 	}

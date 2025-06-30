@@ -2,8 +2,11 @@ package handles
 
 import (
 	"fmt"
-	"main/internal/ai"
+	"main/internal/models"
+	"main/internal/queue"
 	"net/http"
+
+	u "github.com/google/uuid"
 )
 
 func (h *Handlers) Ask(w http.ResponseWriter, r *http.Request) {
@@ -22,15 +25,31 @@ func (h *Handlers) Ask(w http.ResponseWriter, r *http.Request) {
 			writeErrorResponse(w, err, http.StatusBadRequest)
 			return
 		}
-		answer, err := ai.Generate("ministral-3b-2410", h.Pg.Env.EnvMap["MISTRAL_API_KEY"], request, "", tab.Answer, false, true)
+		r := u.New()
+		if err := h.Pg.InProgress(r, uuid_user); err != nil {
+			writeErrorResponse(w, err, http.StatusBadRequest)
+			return
+		}
+		u, err := h.Pg.GetSettings(uuid_user)
 		if err != nil {
 			writeErrorResponse(w, err, http.StatusBadRequest)
 			return
 		}
-		if err := h.Pg.ReviewTitleAdd(uuid, answer.Response, request); err != nil {
-			writeErrorResponse(w, err, http.StatusBadRequest)
-			return
-		}
+		queue.AddInQueue(h.Queue, models.Enquiry{
+			QueryUuid:   r,
+			Uuid:        uuid_user,
+			AskUuid:     uuid,
+			Model:       "mistral-large-2411",
+			Request:     request,
+			Memory:      *u.Memory,
+			System:      "",
+			Assistant:   tab.Answer,
+			IsSystem:    false,
+			IsAssistant: true,
+			Type:        2,
+		})
+		writeJSONResponse(w, models.ReturnUuid{UuidQuery: r}, http.StatusCreated)
+		return
 	case http.MethodPut:
 		if err := h.Pg.ReviewTitleUpdate(text, uuid); err != nil {
 			writeErrorResponse(w, err, http.StatusBadRequest)

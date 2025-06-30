@@ -1,3 +1,1 @@
-CREATE TABLE users_brain (
-	uuid UUID,
-	memory TEXT);
+ALTER TABLE userSettings ADD COLUMN memory BOOLEAN DEFAULT false;

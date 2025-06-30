@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS users_brain CASCADE;
+ALTER TABLE userSettings DROP COLUMN memory;

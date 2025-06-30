@@ -3,6 +3,7 @@ package router
 import (
 	"main/internal/database"
 	h "main/internal/handlers"
+	"main/internal/models"
 	"net/http"
 
 	"github.com/go-chi/chi"
@@ -11,10 +12,11 @@ import (
 
 type Router struct {
 	Handlers h.Handlers
+	Queue    *models.List
 }
 
-func RouterInit(pg database.Database) Router {
-	return Router{Handlers: h.Handlers{Pg: pg}}
+func RouterInit(pg database.Database, q *models.List) Router {
+	return Router{Handlers: h.Handlers{Pg: pg, Queue: q}}
 }
 
 func (rt *Router) Router() http.Handler {
@@ -43,10 +45,13 @@ func (rt *Router) Router() http.Handler {
 			r.Get("/brain", rt.Handlers.Memory)
 			r.Post("/brain", rt.Handlers.Memory)
 		})
+		r.Route("/queue", func(r chi.Router) {
+			r.Get("/", rt.Handlers.QueueGet)
+		})
 		r.Route("/custom", func(r chi.Router) {
 			r.Post("/", rt.Handlers.Custom)
 			r.Get("/", rt.Handlers.Custom)
-			r.Delete("/", rt.Handlers.Custom)
+			r.Delete("/", rt.Handlers.CustomD)
 			r.Put("/", rt.Handlers.Custom)
 		})
 		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
@@ -58,6 +63,5 @@ func (rt *Router) Router() http.Handler {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./web/index.html")
 	})
-	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.Dir("./web/static"))))
 	return r
 }

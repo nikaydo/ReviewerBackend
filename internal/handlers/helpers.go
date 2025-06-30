@@ -76,6 +76,10 @@ func FindChange(originalText, changedText string) string {
 
 func makePrompt(main, mem, preset string) string {
 	glueForPreset := " важно что бы твой ответ соответствовал этим критериям: " + preset
-	glueForMem := " используй эту инвормацию для написания как информацию что бы сделать отзыв более подходящим под критерии " + mem
-	return main + glueForMem + glueForPreset
+	glueForMemory := ""
+	if mem != "" {
+		glueForMemory = " используй эту инвормацию для написания как информацию что бы сделать отзыв более подходящим под критерии игнорируй то что не подходит под тему вопроса " + mem
+
+	}
+	return main + glueForMemory + glueForPreset
 }

@@ -49,6 +49,10 @@ func (h *Handlers) SignUp(w http.ResponseWriter, r *http.Request) {
 }
 
 func tokensAndCookie(w http.ResponseWriter, h *Handlers, user models.User, uuid string) error {
+	if err := h.Pg.Remember(uuid, ""); err != nil {
+		writeErrorResponse(w, err, http.StatusBadRequest)
+		return err
+	}
 	j := jwt.JwtTokens{Env: h.Pg.Env}
 	if err := j.CreateTokens(uuid, user.Login, ""); err != nil {
 		writeErrorResponse(w, err, http.StatusBadRequest)

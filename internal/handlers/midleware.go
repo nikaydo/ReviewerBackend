@@ -1,6 +1,7 @@
 package handles
 
 import (
+	"errors"
 	"main/internal/jwt"
 	"net/http"
 	"strconv"
@@ -11,7 +12,7 @@ func (h Handlers) CheckJWT(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		c, err := r.Cookie("jwt")
 		if err != nil {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			writeErrorResponse(w, errors.New("Unauthorized"), http.StatusUnauthorized)
 			return
 		}
 		_, username, err := jwt.ValidateToken(c.Value, h.Pg.Env.EnvMap["SECRET"])
@@ -19,11 +20,11 @@ func (h Handlers) CheckJWT(next http.Handler) http.Handler {
 			if err == jwt.ErrTokenExpired {
 				user, err := h.Pg.CheckUser(username, "", false)
 				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					writeErrorResponse(w, err, http.StatusInternalServerError)
 					return
 				}
 				if _, _, err := jwt.ValidateToken(user.RefreshToken, h.Pg.Env.EnvMap["SECRET_REFRESH"]); err != nil {
-					http.Error(w, "Unauthorized", http.StatusUnauthorized)
+					writeErrorResponse(w, errors.New("Unauthorized"), http.StatusUnauthorized)
 					return
 				}
 				j := jwt.JwtTokens{Env: h.Pg.Env}
@@ -32,17 +33,17 @@ func (h Handlers) CheckJWT(next http.Handler) http.Handler {
 					return
 				}
 				if err := h.Pg.UpdateUser(user.Login, j.RefreshToken); err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					writeErrorResponse(w, err, http.StatusInternalServerError)
 					return
 				}
 				cockie, err := strconv.Atoi(h.Pg.Env.EnvMap["COCKIE_TTL"])
 				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
+					writeErrorResponse(w, err, http.StatusInternalServerError)
 				}
 				http.SetCookie(w, MakeCookie("jwt", j.AccessToken, time.Duration(time.Duration(cockie)*time.Minute)))
 				next.ServeHTTP(w, r)
 			}
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			writeErrorResponse(w, errors.New("Unauthorized"), http.StatusUnauthorized)
 			return
 		}
 		next.ServeHTTP(w, r)
