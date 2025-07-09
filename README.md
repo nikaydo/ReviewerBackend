@@ -78,7 +78,7 @@ git --version
 
 ## 1. Клонирование репозитория
 ```bash
-git clone <repository-url>
+git clone https://github.com/nikaydo/ReviewerBackend.git
 cd "ReviewerBackend"
 ```
 
