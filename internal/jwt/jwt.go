@@ -1,91 +1,127 @@
+// Package jwt выпускает и проверяет токены доступа.
+//
+// Access-токен короткоживущий и хранится в cookie, refresh-токен живёт
+// долго и выдаётся отдельно. Оба подписываются алгоритмом HMAC-SHA256,
+// алгоритм проверяется явно — иначе на алгоритм «none» или на подмену ключа
+// подвержены подделыванию.
 package jwt
 
 import (
 	"errors"
 	"fmt"
-	"main/internal/config"
-	"strconv"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 )
 
+// Роли пользователей.
+const (
+	RoleAdmin  = "admin"
+	RoleViewer = "viewer"
+)
+
+// Ошибки проверки токена. Их различает middleware: по ErrTokenExpired
+// запускается ротация, остальные ошибки означают отказ.
 var (
-	ErrTokenExpired = errors.New("token is expired")
+	ErrTokenExpired   = errors.New("срок действия токена истёк")
+	ErrTokenInvalid   = errors.New("токен недействителен")
+	ErrTokenMalformed = errors.New("токен повреждён")
+	ErrUnexpectedAlg  = errors.New("неожиданный алгоритм подписи")
 )
 
-type JwtTokens struct {
-	AccessToken  string
-	RefreshToken string
-	Env          config.Env
+// Claims — содержимое access-токена.
+type Claims struct {
+	jwt.RegisteredClaims
+	Login string `json:"login"`
+	Role  string `json:"role"`
 }
 
-func (j *JwtTokens) CreateTokens(uuid string, username, role string) error {
-	var err error
-	j.AccessToken, err = j.CreateToken(uuid, username, role, j.Env.EnvMap["SECRET_TTL"], j.Env.EnvMap["SECRET"])
-	if err != nil {
-		return fmt.Errorf("error creating JWT token: %w", err)
-	}
-	j.RefreshToken, err = j.CreateToken(uuid, username, role, j.Env.EnvMap["REFRESH_TTL"], j.Env.EnvMap["SECRET_REFRESH"])
-	if err != nil {
-		return fmt.Errorf("error creating refresh token: %w", err)
-	}
-	return nil
+// Manager выпускает и проверяет токены.
+type Manager struct {
+	secret    []byte
+	issuer    string
+	accessTTL time.Duration
+	now       func() time.Time
 }
 
-func (j *JwtTokens) CreateToken(uuid string, username, role, tokenTTL, secret string) (string, error) {
-	exTime, err := strconv.Atoi(tokenTTL)
-	if err != nil {
-		return "", fmt.Errorf("failed to parse TTL from environment: %w", err)
+// NewManager создаёт менеджер токенов.
+func NewManager(secret, issuer string, accessTTL time.Duration) *Manager {
+	return &Manager{
+		secret:    []byte(secret),
+		issuer:    issuer,
+		accessTTL: accessTTL,
+		now:       time.Now,
 	}
-	tokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS256,
-		jwt.MapClaims{
-			"sub":      uuid,
-			"username": username,
-			"iss":      "server",
-			"role":     role,
-			"aud":      "service",
-			"exp":      time.Now().Add(time.Duration(exTime * int(time.Minute))).Unix(),
-			"iat":      time.Now().Unix(),
-		}).SignedString([]byte(secret))
-	if err != nil {
-		return "", fmt.Errorf("error signing token: %w", err)
-	}
-	return tokenString, nil
 }
 
-func ValidateToken(t, secret string) (string, string, error) {
-	token, err := jwt.Parse(t, func(token *jwt.Token) (any, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("no valid signing method")
-		}
-		return []byte(secret), nil
-	})
+// NewAccessToken выпускает access-токен для пользователя.
+func (m *Manager) NewAccessToken(userID, login, role string) (string, time.Time, error) {
+	issuedAt := m.now()
+	expiresAt := issuedAt.Add(m.accessTTL)
+
+	claims := Claims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Subject:   userID,
+			Issuer:    m.issuer,
+			Audience:  jwt.ClaimStrings{m.issuer},
+			IssuedAt:  jwt.NewNumericDate(issuedAt),
+			NotBefore: jwt.NewNumericDate(issuedAt),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+			ID:        fmt.Sprintf("%d", issuedAt.UnixNano()),
+		},
+		Login: login,
+		Role:  role,
+	}
+
+	signed, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(m.secret)
 	if err != nil {
-		if err.Error() == "Token is expired" {
-			uuid, username, err := setClaims(token)
-			if err != nil {
-				return uuid, "", fmt.Errorf("failed to extract claims from expired token: %w", err)
+		return "", time.Time{}, fmt.Errorf("не удалось подписать токен: %w", err)
+	}
+	return signed, expiresAt, nil
+}
+
+// Parse проверяет access-токен и возвращает его claims.
+func (m *Manager) Parse(tokenString string) (*Claims, error) {
+	claims := &Claims{}
+
+	parsed, err := jwt.ParseWithClaims(
+		tokenString,
+		claims,
+		func(t *jwt.Token) (any, error) {
+			// Проверяем именно тот алгоритм, которым подписан токен.
+			// Без этой проверки библиотека примет и HS512, и «none».
+			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, ErrUnexpectedAlg
 			}
-			return uuid, username, ErrTokenExpired
+			return m.secret, nil
+		},
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),
+		jwt.WithIssuer(m.issuer),
+		jwt.WithAudience(m.issuer),
+		jwt.WithExpirationRequired(),
+		jwt.WithIssuedAt(),
+		// Проверка срока действия идёт по now из Manager, а не по
+		// системным часам библиотеки: так время можно подменять в тестах
+		// и контролировать в коде.
+		jwt.WithTimeFunc(m.now),
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, jwt.ErrTokenExpired), errors.Is(err, jwt.ErrTokenNotValidYet):
+			return nil, ErrTokenExpired
+		case errors.Is(err, ErrUnexpectedAlg):
+			return nil, ErrUnexpectedAlg
+		case errors.Is(err, jwt.ErrTokenMalformed), errors.Is(err, jwt.ErrSignatureInvalid):
+			return nil, ErrTokenInvalid
+		default:
+			return nil, fmt.Errorf("%w: %v", ErrTokenInvalid, err)
 		}
-		return "", "", fmt.Errorf("failed to parse token: %w", err)
 	}
-	return setClaims(token)
-}
-
-func setClaims(token *jwt.Token) (string, string, error) {
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return "", "", fmt.Errorf("invalid token")
+	if !parsed.Valid {
+		return nil, ErrTokenInvalid
 	}
-	username, ok := claims["username"].(string)
-	if !ok {
-		return "", "", fmt.Errorf("cant parse username from jwt token")
+	if claims.Subject == "" {
+		return nil, ErrTokenInvalid
 	}
-	uuid, ok := claims["sub"].(string)
-	if !ok {
-		return "", "", fmt.Errorf("cant parse id from jwt token")
-	}
-	return uuid, username, nil
+	return claims, nil
 }

@@ -700,25 +700,51 @@
       loginForm.classList.add('hidden');
     });
 
-    const API_BASE_URL = 'http://localhost:8080';
+    // Адрес берётся из текущего origin, а не задаётся константой: иначе
+    // при раздаче с другого хоста или через прокси запросы уходили бы на
+    // localhost:8080 мимо сервера.
+    const API_BASE_URL = window.location.origin;
 
-    async function sendAuthRequest(url, login, pass, isSignup) {
+    // Проверка сессии: с её помощью страница входа понимает, что
+    // пользователь уже авторизован, и не показывает лишние формы.
+    async function hasValidSession() {
       try {
-        const response = await fetch(url, {
+        const response = await fetch(`${API_BASE_URL}/api/me`, { credentials: 'same-origin' });
+        return response.ok;
+      } catch {
+        return false;
+      }
+    }
+
+    async function sendAuthRequest(path, login, password) {
+      try {
+        const response = await fetch(`${API_BASE_URL}${path}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ login, pass })
+          credentials: 'same-origin',
+          body: JSON.stringify({ login, password })
         });
 
-        if (response.ok) {  
-          window.location.href = `${API_BASE_URL}/user`;
-        } else {
-          const data = await response.json();
-          return data?.error || 'Ошибка авторизации';
+        if (response.ok) {
+          window.location.href = `${API_BASE_URL}/app`;
+          return null;
         }
-      } catch (error) {
-        return 'Неверный логин или пароль';
+
+        // Сервер всегда отвечает JSON: полем error с понятным текстом и
+        // полем code с машинным кодом причины.
+        const data = await response.json().catch(() => null);
+        if (response.status === 429) {
+          return 'Слишком много попыток. Подождите минуту и попробуйте снова.';
+        }
+        return data?.error || 'Не удалось выполнить запрос';
+      } catch {
+        return 'Нет связи с сервером. Проверьте, что приложение запущено.';
       }
+    }
+
+    // Если сессия уже есть, сразу уходим в приложение.
+    if (await hasValidSession()) {
+      window.location.replace(`${API_BASE_URL}/app`);
     }
 
     loginFormElement.addEventListener('submit', async (e) => {
@@ -729,7 +755,7 @@
         showMessage(loginErrorMessage, 'Пожалуйста, заполните все поля.');
         return;
       }
-      const error = await sendAuthRequest(`${API_BASE_URL}/signin`, login, pass, false);
+      const error = await sendAuthRequest('/api/signin', login, pass);
       if (error) showMessage(loginErrorMessage, error);
     });
 
@@ -741,7 +767,7 @@
         showMessage(registerErrorMessage, 'Пожалуйста, заполните все поля.');
         return;
       }
-      const error = await sendAuthRequest(`${API_BASE_URL}/signup`, login, pass, true);
+      const error = await sendAuthRequest('/api/signup', login, pass);
       if (error) showMessage(registerErrorMessage, error);
     });
   </script>

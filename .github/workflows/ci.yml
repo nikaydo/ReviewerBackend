@@ -1,0 +1,105 @@
+name: Go
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Тесты и статический анализ
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: tester
+          POSTGRES_PASSWORD: tester
+          POSTGRES_DB: tester
+        ports:
+          - 5432:5432
+        # Сервис считается готовым, когда он принимает подключения:
+        # проверять нужно именно это, а не сам факт запуска процесса.
+        options: >-
+          --health-cmd "pg_isready -U tester -d tester"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      # Интеграционные тесты сами пропускаются без этой переменной, но в CI
+      # она задана, поэтому проверки доступа к данным действительно идут.
+      TEST_DATABASE_URL: postgres://tester:tester@localhost:5432/tester?sslmode=disable
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Установить Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24.x'
+          check-latest: true
+          cache: true
+
+      - name: Скачать зависимости
+        run: go mod download
+
+      - name: Проверить форматирование
+        run: |
+          unformatted="$(gofmt -l . | grep -v '^$' || true)"
+          if [ -n "$unformatted" ]; then
+            echo "Файлы требуют gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: Тесты с проверкой покрытия
+        run: go test -race -covermode=atomic -coverprofile=coverage.out ./...
+
+      - name: Отчёт о покрытии
+        run: |
+          go tool cover -func=coverage.out | tail -1
+
+      - name: staticcheck
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          staticcheck ./...
+
+      - name: Сборка
+        run: go build -trimpath -o /tmp/reviewer ./cmd/server
+
+      - name: Проверить, что секреты не попали в сборку
+        run: |
+          # Конфигурация читается из окружения, поэтому в бинарнике не должно
+          # быть значений из .env. Проверяем на типичных секретах.
+          if strings /tmp/reviewer | grep -q 'sk-or-v1-'; then
+            echo "В бинарнике найден ключ API"
+            exit 1
+          fi
+
+  docker:
+    name: Сборка образа
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Собрать образ
+        run: docker build -t reviewer:ci .
+
+      - name: Проверить, что .env не попал в образ
+        run: |
+          # Раньше Dockerfile копировал .env в образ, из-за чего секреты
+          # попадали в слои. Теперь в образе .env быть не должно.
+          if docker run --rm --entrypoint sh reviewer:ci -c 'test -f /app/.env'; then
+            echo ".env попал в образ"
+            exit 1
+          fi
+          echo ".env в образе отсутствует"
