@@ -17,8 +17,14 @@ CREATE TABLE refresh_tokens (
     revoked_at TIMESTAMPTZ
 );
 
--- Хеш уникален: он и есть идентификатор токена при ротации.
+-- Хеш уникален: по нему ищется токен при проверке и ротации.
 CREATE UNIQUE INDEX refresh_tokens_hash_key ON refresh_tokens (token_hash);
+
+-- Ротация не перезаписывает хеш, а добавляет новую запись и помечает
+-- прежнюю отозванной. Благодаря этому хеш предъявленного токена остаётся
+-- в базе, и его повторное предъявление можно распознать. Этот индекс
+-- обслуживает именно такую проверку.
+CREATE INDEX refresh_tokens_active_idx ON refresh_tokens (token_hash) WHERE revoked_at IS NULL;
 
 -- Отзыв всех токенов пользователя идёт по этому индексу.
 CREATE INDEX refresh_tokens_user_idx ON refresh_tokens (user_uuid) WHERE revoked_at IS NULL;

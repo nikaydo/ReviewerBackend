@@ -51,41 +51,67 @@ func (s *Store) SaveRefreshToken(ctx context.Context, userID, familyID, tokenHas
 	return nil
 }
 
-// RotateRefreshToken атомарно заменяет токен в семействе на новый.
+// RotateRefreshToken заменяет токен в семействе на новый.
+//
+// Ротация оформляется двумя операциями в одной транзакции: текущий токен
+// помечается отозванным, новый добавляется отдельной записью. Именно так, а не
+// обновлением поля token_hash, потому что иначе хеш старого токена
+// перезаписывается и перестаёт существовать — повторное предъявление старого
+// токена становится неотличимым от предъявления никогда не существовавшего,
+// и защита от повторного использования не срабатывает.
 //
 // Возвращает ErrRefreshReused, если переданный токен уже отозван: значит,
-// им воспользовались повторно, и всё семейство нужно аннулировать. Проверка
-// и замена выполняются одним UPDATE, поэтому два параллельных запроса не
-// могут оба успешно продлить одно семейство.
+// им воспользовались повторно, и всё семейство нужно аннулировать.
 func (s *Store) RotateRefreshToken(ctx context.Context, userID, familyID, oldHash, newHash string, expiresAt time.Time) error {
-	var (
-		updatedID string
-		revokedAt *time.Time
-	)
-	err := s.pool.QueryRow(ctx, `
-		UPDATE refresh_tokens
-		SET token_hash = $1,
-		    expires_at = $2,
-		    revoked_at = NULL,
-		    rotated_at = now()
-		WHERE token_hash = $3
-		  AND user_uuid = $4
-		  AND family_id = $5
-		RETURNING uuid::text, revoked_at
-	`, newHash, expiresAt, oldHash, userID, familyID).Scan(&updatedID, &revokedAt)
+	tx, err := s.pool.Begin(ctx)
 	if err != nil {
-		if isNoRows(err) {
-			// Токен не найден среди активных. Проверяем, был ли он
-			// отозван ранее — это признак повторного использования.
-			var exists bool
-			if qErr := s.pool.QueryRow(ctx,
-				`SELECT TRUE FROM refresh_tokens WHERE token_hash = $1 AND user_uuid = $2`,
-				oldHash, userID).Scan(&exists); qErr == nil && exists {
-				return &ErrRefreshReused{UserID: userID, FamilyID: familyID}
-			}
+		return fmt.Errorf("не удалось начать транзакцию: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	// Помечаем предъявленный токен отозванным. Условие revoked_at IS NULL
+	// делает операцию идемпотентной: второй параллельный запрос с тем же
+	// токеном не обновит ни одной строки и получит ErrRefreshReused.
+	var rotatedID string
+	err = tx.QueryRow(ctx, `
+		UPDATE refresh_tokens
+		SET revoked_at = now(), rotated_at = now()
+		WHERE token_hash = $1
+		  AND user_uuid = $2
+		  AND family_id = $3
+		  AND revoked_at IS NULL
+		RETURNING uuid::text
+	`, oldHash, userID, familyID).Scan(&rotatedID)
+	if err != nil {
+		if !isNoRows(err) {
+			return fmt.Errorf("не удалось отозвать предыдущий токен: %w", err)
+		}
+
+		// Строка не обновилась. Различаем два случая: токен уже отозван
+		// (признак утечки) или его не существует вовсе.
+		var exists bool
+		qErr := tx.QueryRow(ctx,
+			`SELECT TRUE FROM refresh_tokens WHERE token_hash = $1 AND user_uuid = $2`,
+			oldHash, userID).Scan(&exists)
+		switch {
+		case qErr != nil && !isNoRows(qErr):
+			return fmt.Errorf("не удалось проверить состояние токена: %w", qErr)
+		case exists:
+			return &ErrRefreshReused{UserID: userID, FamilyID: familyID}
+		default:
 			return ErrNotFound
 		}
-		return fmt.Errorf("не удалось обновить refresh-токен: %w", err)
+	}
+
+	if _, err := tx.Exec(ctx, `
+		INSERT INTO refresh_tokens (uuid, user_uuid, family_id, token_hash, expires_at)
+		VALUES (gen_random_uuid(), $1, $2, $3, $4)
+	`, userID, familyID, newHash, expiresAt); err != nil {
+		return fmt.Errorf("не удалось сохранить новый токен: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("не удалось зафиксировать транзакцию: %w", err)
 	}
 	return nil
 }
