@@ -1,1 +1,0 @@
-ALTER TABLE userSettings ADD COLUMN memory BOOLEAN DEFAULT false;

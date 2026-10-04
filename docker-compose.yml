@@ -1,28 +1,54 @@
-version: "3.9"
+# Локальный запуск всего стека: приложение и PostgreSQL.
+#
+#   docker compose up --build
+#
+# Значения по умолчанию предназначены только для локальной разработки.
+# Ни в коем случае не переносите их в продакшен.
 
 services:
   db:
-    image: postgres:15-alpine
-    restart: always
+    image: postgres:17-alpine
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
+      POSTGRES_USER: reviewer
+      POSTGRES_PASSWORD: reviewer
+      POSTGRES_DB: reviewer
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # Приложение ждёт готовности базы, поэтому проверка должна смотреть
+      # именно на способность принимать подключения, а не на то, что
+      # процесс postgres запустился.
+      test: ["CMD-SHELL", "pg_isready -U reviewer -d reviewer"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   app:
     build: .
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8080:8080"
     environment:
-      DATABASE_URL: postgres://myuser:mypassword@db:5432/mydb?sslmode=disable
+      DATABASE_URL: postgres://reviewer:reviewer@db:5432/reviewer?sslmode=disable
+      HOST: 0.0.0.0
+      PORT: 8080
+      # Локально по http Secure-cookie не работает, поэтому выключаем.
+      COOKIE_SECURE: "false"
     env_file:
-      - .env
+      # Секреты берутся из локального .env, который не отслеживается git.
+      # Создайте его: cp .env.example .env
+      - path: .env
+        required: false
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
 
 volumes:
   pgdata:

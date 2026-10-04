@@ -1,0 +1,5 @@
+DROP TABLE IF EXISTS custom_prompts;
+DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS user_settings;
+DROP TABLE IF EXISTS review_titles;
+DROP TABLE IF EXISTS users;

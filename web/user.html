@@ -1384,25 +1384,76 @@
   </main>
   
 <script>
-    const API_BASE_URL = 'http://localhost:8080';
+    // Адрес берётся из текущего origin: жёстко заданный localhost:8080
+    // ломал работу при обращении к приложению с другого адреса или
+    // через обратный прокси.
+    const API_BASE_URL = window.location.origin;
 
-    // Helper function to handle API requests with 401 redirect
-    async function apiRequest(url, options = {}) {
-      try {
-        const response = await fetch(url, options);
-        
-        // Check for 401 Unauthorized
-        if (response.status === 401) {
-          console.warn('401 Unauthorized received, redirecting to root');
-          window.location.href = `${API_BASE_URL}/`;
-          return; // Exit early since we're redirecting
+    // refreshInFlight защищает от параллельных обновлений сессии: при
+    // нескольких одновременных запросах каждый из них пробовал бы обновить
+    // токен, а после успешной ротации второй вызов потерял бы сессию.
+    let refreshInFlight = null;
+
+    // refreshSession обновляет access-токен по refresh-токену.
+    //
+    // Сервер различает «токен недействителен» и «срок истёк», помечая
+    // второй случай заголовком X-Auth-Reason. При истечении сессию можно
+    // продлить, не заставляя пользователя вводить пароль заново.
+    async function refreshSession() {
+      if (refreshInFlight) {
+        return refreshInFlight;
+      }
+
+      refreshInFlight = (async () => {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/refresh`, {
+            method: 'POST',
+            credentials: 'same-origin',
+          });
+          return response.ok;
+        } catch {
+          return false;
+        } finally {
+          refreshInFlight = null;
         }
-        
-        return response;
+      })();
+
+      return refreshInFlight;
+    }
+
+    // apiRequest выполняет запрос и при необходимости обновляет сессию.
+    async function apiRequest(url, options = {}) {
+      const send = () => fetch(url, { credentials: 'same-origin', ...options });
+
+      let response;
+      try {
+        response = await send();
       } catch (error) {
-        // Re-throw other errors for normal handling
+        // Сетевая ошибка пробрасывается наружу: вызывающий код покажет
+        // пользователю понятное сообщение.
         throw error;
       }
+
+      if (response.status !== 401) {
+        return response;
+      }
+
+      // Токен истёк — пробуем обновить сессию и повторяем запрос один раз.
+      if (response.headers.get('X-Auth-Reason') === 'expired' && await refreshSession()) {
+        response = await send();
+        if (response.status !== 401) {
+          return response;
+        }
+      }
+
+      console.warn('Сессия недоступна, перенаправляем на страницу входа');
+      window.location.href = `${API_BASE_URL}/`;
+
+      // Возвращаем промис, который никогда не разрешается: вызывающий код
+      // не должен продолжать работу с недоступной сессией, а разбирать
+      // ответ на месте нечего. Документ всё равно будет выгружен
+      // при переходе, поэтому незавершённый промис не утечёт.
+      return new Promise(() => {});
     }
 
     // Enhanced error handler for API responses
@@ -1411,7 +1462,7 @@
       
       try {
         const errorData = await response.json();
-        errorMessage = errorData.message || errorData.error || defaultMessage;
+        errorMessage = errorData.error || errorData.error || defaultMessage;
       } catch (parseError) {
         // If we can't parse JSON, try to get text response
         try {
@@ -1596,14 +1647,14 @@ const model = MODEL_ID;
       // Validate inputs
       
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/settings`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/settings`, {
           method: "PUT",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-body: new URLSearchParams({ request, model: MODEL_ID, memory: memory.toString() })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ request, model: MODEL_ID, memory: memory })
         });
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({ message: "Неизвестная ошибка сервера" }));
-          throw new Error(errorData.message || `Ошибка при обновлении настроек: ${res.status}`);
+          throw new Error(errorData.error || `Ошибка при обновлении настроек: ${res.status}`);
         }
       } catch (err) {
         console.error("Update Settings Error:", err);
@@ -1622,12 +1673,12 @@ body: new URLSearchParams({ request, model: MODEL_ID, memory: memory.toString() 
     // Function to load settings
     async function loadSettings() {
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/settings`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/settings`, {
           headers: { "Content-Type": "application/json" }
         });
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({ message: "Неизвестная ошибка сервера" }));
-          throw new Error(errorData.message || `Ошибка при загрузке настроек: ${res.status}`);
+          throw new Error(errorData.error || `Ошибка при загрузке настроек: ${res.status}`);
         }
         const data = await res.json();
         if (data && typeof data === 'object') {
@@ -1788,20 +1839,17 @@ document.getElementById("generateReviewBtn").addEventListener("click", async () 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 120000);
 
-    const requestParams = { request: prompt, model };
+    // Тело запроса собирается как JSON: сервер принимает только JSON и
+    // отклоняет неизвестные поля.
+    const requestBody = { product: prompt, model };
     if (selectedPreset) {
-      requestParams.userpreset = selectedPreset;
-      console.log("Отправляется userpreset:", selectedPreset); // Для отладки
-    } else {
-      console.log("Пресет не выбран, userpreset не добавлен");
+      requestBody.preset = selectedPreset;
     }
 
-    console.log("Параметры запроса:", requestParams); // Дополнительное логирование
-
-    const res = await apiRequest(`${API_BASE_URL}/user/review`, {
+    const res = await apiRequest(`${API_BASE_URL}/api/reviews`, {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams(requestParams),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(requestBody),
       signal: controller.signal
     });
 
@@ -1855,7 +1903,7 @@ document.getElementById("generateReviewBtn").addEventListener("click", async () 
       favoriteListContainer.innerHTML = '<div class="loader mx-auto"></div>';
 
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/review`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/reviews`, {
           method: "GET",
           headers: { "Content-Type": "application/json" }
         });
@@ -1957,12 +2005,12 @@ favoriteListContainer.innerHTML = favoriteReviews.length === 0
                       onConfirm: async () => {
                         try {
                           const uuid = btn.dataset.uuid;
-const res = await apiRequest(`${API_BASE_URL}/user/review?uuid=${encodeURIComponent(uuid)}`, {
+const res = await apiRequest(`${API_BASE_URL}/api/reviews/${encodeURIComponent(uuid)}`, {
   method: "DELETE"
 });
                           if (!res.ok) {
                             const errorData = await res.json();
-                            throw new Error(errorData.message || "Ошибка при удалении отзыва");
+                            throw new Error(errorData.error || "Ошибка при удалении отзыва");
                           }
                           const listItem = btn.closest("li");
                           listItem.classList.add("opacity-0", "scale-95");
@@ -1984,10 +2032,10 @@ document.querySelectorAll(".favorite-btn").forEach(btn => {
     const uuid = btn.dataset.uuid;
     const favorite = btn.dataset.favorite === "true";
     try {
-      await apiRequest(`${API_BASE_URL}/user/review/favorite`, {
+      await apiRequest(`${API_BASE_URL}/api/reviews/favorite`, {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ uuid, favorite: !favorite })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ uuid, favorite: !favorite })
       });
       btn.dataset.favorite = !favorite;
       btn.classList.toggle("active", !favorite);
@@ -2028,10 +2076,10 @@ document.querySelectorAll(".favorite-btn").forEach(btn => {
       indicator.className = "mt-2 flex items-center gap-2 transition-all duration-300";
       blockAllGenerateButtons();
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/review/ask`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/titles`, {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ request: req, uuid })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uuid, request: req })
         });
 
         if (!res.ok) {
@@ -2072,10 +2120,10 @@ document.querySelectorAll(".favorite-btn").forEach(btn => {
       toggleTitleEditBtn.classList.add("opacity-50", "cursor-not-allowed");
 
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/review/ask`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/titles`, {
           method: "PUT",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ uuid, text })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uuid, title: text })
         });
 
         if (!res.ok) {
@@ -2101,10 +2149,10 @@ document.querySelectorAll(".favorite-btn").forEach(btn => {
     
     async function updateReviewText(uuid, text) {
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/review`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/reviews`, {
           method: "PUT",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ uuid, text })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ uuid, answer: text })
         });
         if (!res.ok) {
           const errorMessage = await handleApiError(res, 'Ошибка при обновлении ответа');
@@ -2436,7 +2484,7 @@ function displayReview(index) {
     // API functions for custom prompts
     async function loadCustomPrompts() {
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/custom`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/prompts`, {
           headers: { "Content-Type": "application/json" }
         });
         if (!res.ok) {
@@ -2453,14 +2501,14 @@ function displayReview(index) {
 
     async function addCustomPrompt(name, promt) {
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/custom`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/prompts`, {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ name, promt })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, prompt: promt })
         });
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({ message: "Неизвестная ошибка сервера" }));
-          throw new Error(errorData.message || `Ошибка при добавлении настройки: ${res.status}`);
+          throw new Error(errorData.error || `Ошибка при добавлении настройки: ${res.status}`);
         }
         await loadCustomPrompts();
         await loadPresetsForCreate(); // Update presets in create section
@@ -2473,14 +2521,14 @@ function displayReview(index) {
 
     async function updateCustomPrompt(uuid, name, promt) {
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/custom`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/prompts/${encodeURIComponent(uuid)}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({ uuid, name, promt })
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, prompt: promt })
         });
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({ message: "Неизвестная ошибка сервера" }));
-          throw new Error(errorData.message || `Ошибка при обновлении настройки: ${res.status}`);
+          throw new Error(errorData.error || `Ошибка при обновлении настройки: ${res.status}`);
         }
         await loadCustomPrompts();
         await loadPresetsForCreate(); // Update presets in create section
@@ -2493,12 +2541,12 @@ function displayReview(index) {
 
     async function deleteCustomPrompt(uuid) {
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/custom?uuid=${encodeURIComponent(uuid)}`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/prompts/${encodeURIComponent(uuid)}`, {
           method: "DELETE"
   });
         if (!res.ok) {
           const errorData = await res.json().catch(() => ({ message: "Неизвестная ошибка сервера" }));
-          throw new Error(errorData.message || `Ошибка при удалении настройки: ${res.status}`);
+          throw new Error(errorData.error || `Ошибка при удалении настройки: ${res.status}`);
         }
         await loadCustomPrompts();
         await loadPresetsForCreate(); // Update presets in create section
@@ -2650,7 +2698,7 @@ function displayReview(index) {
     // Load and display presets in create section
 async function loadPresetsForCreate() {
   try {
-    const res = await apiRequest(`${API_BASE_URL}/user/custom`, {
+    const res = await apiRequest(`${API_BASE_URL}/api/prompts`, {
       headers: { "Content-Type": "application/json" }
     });
     if (!res.ok) {
@@ -2845,7 +2893,7 @@ function fallbackCopy(text) {
     // Queue monitoring functions
     async function checkQueueStatus(uuid) {
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/queue?uuid=${encodeURIComponent(uuid)}`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/queue/${encodeURIComponent(uuid)}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -3059,10 +3107,10 @@ function updateQueueStatus(position, total) {
       textarea.disabled = true;
       
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/review/mainpromt`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/main-prompt`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ text })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: text })
         });
         
         if (!res.ok) {
@@ -3105,10 +3153,10 @@ function updateQueueStatus(position, total) {
       if (success) success.classList.add('hidden');
       
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/review/brain`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({ text })
+        const res = await apiRequest(`${API_BASE_URL}/api/memory`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text })
         });
         
         if (!res.ok) {
@@ -3152,7 +3200,7 @@ function updateQueueStatus(position, total) {
       if (loader) loader.classList.remove('hidden');
       
       try {
-        const res = await apiRequest(`${API_BASE_URL}/user/review/brain`, {
+        const res = await apiRequest(`${API_BASE_URL}/api/memory`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
